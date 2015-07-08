@@ -3,7 +3,7 @@ TomoTools
 
   TomoTools is a Matlab based GUI for processing of x-ray tomography data. You can open and view data such as raw projections, sinograms and reconstruction slices. It features a plugin architecture for extensibility of supported file types and processing tools.
 
-## Current plugins
+## Plugins
 ### 1. Export
   Export data to tiff images, raw binary files, or Avizo am files. Apply greylevel scaling, cropping and change data type. The histogram peak fitting tool can be used to aid rescaling. 
 
@@ -20,7 +20,7 @@ TomoTools
 
  Requirements: image processing toolbox in R2015a or greater.
 
-## Currently supported file types
+## Supported file types
   1. Zeiss Xradia TX(R)M file format (windows only)
   2. Nikon Xtek raw data format (sample shifts/dithering to be added in future)
   3. Volume Graphics VGI format

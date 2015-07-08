@@ -11,7 +11,7 @@ TomoTools
   Apply phase retrieval to radiographs containing inline phase contrast. Currently supported algorithms are TIE-HOM (Paganin) and Phase-Attenuation Duality (PAD). Phase retrieval can be incorporated into reconstruction, see below
 
 ### 3. Reconstruction
-  A plugin for the ASTRA reconstruction toolbox. It features pre-processing such as finding the centre of rotation, rig artefact reduction, hot-pixel removal and sinogram padding. Parallel beam and cone beam geometries are supported. Filtered backprojection or iterative algorithms can be selected. 
+  A plugin for the ASTRA reconstruction toolbox. It features pre-processing such as finding the centre of rotation, ring artefact reduction, hot-pixel removal and sinogram padding. Parallel beam and cone beam geometries are supported. Filtered backprojection or iterative algorithms can be selected. 
 
   Tested with ASTRA version 1.5 and 1.6
 
@@ -21,8 +21,22 @@ TomoTools
  Requirements: image processing toolbox in R2015a or greater.
 
 ## Currently supported file types
-  1. Zeiss Xradia TX(R)M file type (windows only)
+  1. Zeiss Xradia TX(R)M file format (windows only)
   2. Nikon Xtek raw data format (sample shifts/dithering to be added in future)
   3. Volume Graphics VGI format
   4. NeXus file format
   5. Tiff stacks
+   
+## License
+
+The ASTRA Toolbox is open source under the GPLv3 license.
+
+## Author
+
+Dr Rob S Bradley
+Henry Moseley X-ray Imaging Facility, The University of Manchester
+
+email: 
+website: www.mxif.manchester.ac.uk
+
+Copyright: 2013-2015, R S Bradley

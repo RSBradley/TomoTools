@@ -29,14 +29,14 @@ TomoTools
    
 ## License
 
-The ASTRA Toolbox is open source under the GPLv3 license.
+TomoTools is open source under the GPLv3 license.
 
 ## Author
 
 Dr Rob S Bradley
 Henry Moseley X-ray Imaging Facility, The University of Manchester
 
-email: 
+email:
 website: www.mxif.manchester.ac.uk
 
-Copyright: 2013-2015, R S Bradley
+Copyright: 2013-2015, R. S. Bradley

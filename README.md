@@ -5,7 +5,7 @@ TomoTools
   
   This is a beta version and is likely to crash or behave unexpectedly!
 
-![TomoTools preview](/master/TomoTools screenshot.jpg)
+![TomoTools preview](/TomoTools screenshot.jpg)
 
 ## Plugins
 ### 1. Export

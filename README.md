@@ -5,6 +5,8 @@ TomoTools
   
   This is a beta version and is likely to crash or behave unexpectedly!
 
+![TomoTools preview](/master/TomoTools screenshot.jpg)
+
 ## Plugins
 ### 1. Export
   Export data to tiff images, raw binary files, or Avizo am files. Apply greylevel scaling, cropping and change data type. The histogram peak fitting tool can be used to aid rescaling. 

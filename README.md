@@ -37,7 +37,7 @@ TomoTools is open source under the GPLv3 license.
 
 ## Author
 
-Dr Rob S Bradley
+Dr Rob S Bradley,
 Henry Moseley X-ray Imaging Facility, The University of Manchester
 
 email:

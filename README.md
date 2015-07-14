@@ -32,7 +32,7 @@ TomoTools
   5. Tiff stacks
    
 ## Installation
-Download the files and add all folders and sub folders to the Matlab path. Run TTconfig to setup defaults.
+Download the files and add all folders and sub folders to the Matlab path. Run TTconfig to setup defaults. Run TomoTools to load the GUI.
 
 ## License
 

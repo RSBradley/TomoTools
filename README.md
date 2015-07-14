@@ -31,6 +31,9 @@ TomoTools
   4. NeXus file format
   5. Tiff stacks
    
+## Installation
+Download the files and add all folders and sub folders to the Matlab path. Run TTconfig to setup defaults.
+
 ## License
 
 TomoTools is open source under the GPLv3 license.

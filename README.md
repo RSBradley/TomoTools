@@ -3,7 +3,7 @@ TomoTools
 
   TomoTools is a Matlab based GUI for processing of x-ray tomography data. You can open and view data such as raw projections, sinograms and reconstruction slices. It features a plugin architecture for extensibility of supported file types and processing tools.
   
-  This is a beta version and is likely to crash or behave unexpectedly!
+  This is a beta version and may crash or behave unexpectedly!
 
 ![TomoTools preview](/TomoTools screenshot.jpg)
 

@@ -29,7 +29,7 @@ algorithms = {'FBP/FDK', 'SIRT', 'CGLS'; 'BP3D_CUDA', 'SIRT3D_CUDA', 'CGLS3D_CUD
 RAmethods = cat(1,{'none', {},[]},RAmethods);
 
 %% PANEL NAME==========================================================
-mod_hdl.name = 'Reconstruction1';
+mod_hdl.name = 'Reconstruction';
 mod_hdl.version = '1.0';
 mod_hdl.target = 'PS';
 

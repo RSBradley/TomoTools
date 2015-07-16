@@ -130,9 +130,10 @@ function file_load(handles,mod_hdl)
     end
     switch handles.hdr_short.FileContents(1)
         case 'P'
-           set(mod_hdl.flatfield_cbox, 'Value', 1, 'Enable', 'on');  
+           set(mod_hdl.scale_cbox, 'Value', 1, 'Enable', 'on');  
         otherwise
-           set(mod_hdl.flatfield_cbox, 'Value', 0, 'Enable', 'off');    
+           set(mod_hdl.scale_cbox, 'Value', 0, 'Enable', 'off');  
+    end
     end
 end
 

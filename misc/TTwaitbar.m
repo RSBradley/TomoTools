@@ -126,8 +126,8 @@ if create_wb
     stop(TTimer);
     setappdata(wb, 'BusyTimer', {TTimer, {0,1}});
 
-    p = fileparts(mfilename('fullpath'));    
-    je = javax.swing.JEditorPane('text/html', ['<html><img src="file:/' p '\misc\TTbusy.gif"/></html>']);
+    p = fileparts(mfilename('fullpath'));
+    je = javax.swing.JEditorPane('text/html', ['<html><img src="file:/' p '\TTbusy.gif"/></html>']);
     [hj, handles.busy] =  javacomponent(je,[],up);
     hj.setBackground(java.awt.Color(defs.panel_colour(1),defs.panel_colour(2),defs.panel_colour(3)))
     busy_pos = ax_pos+[-4 0 4 4];

@@ -227,14 +227,7 @@ end
 %%
     function full_parallel_calc
        %Suitable when not outputting to disk 
-       if show_wb            
-%             wb = com.mathworks.mlwidgets.dialog.ProgressBarDialog.createProgressBar('Creating sinograms...', []);
-%             wb.setValue(0);
-%             wb.setSpinnerVisible(false);
-%             wb.setCircularProgressBar(true);
-%             wb.setCancelButtonVisible(false);
-%             wb.setVisible(true); 
-%             wb.setProgressStatusLabel('Creating sinogram(s)...')
+       if show_wb
               options.Title = 'create_SINO_DATA3D';
               options.InfoString  = 'Creating sinogram(s)...';
               wb = TTwaitbar('busy', options);
@@ -462,8 +455,11 @@ end
                     TTwaitbar(q(n)/n_angles,wb);
                end
                  
-        end          
-            
+        end 
+        %% TIDY UP
+        if show_wb
+            close(wb);
+        end    
                        
             
             

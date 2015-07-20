@@ -160,14 +160,18 @@ item1 = uimenu(hcmenu, 'Label', 'Set display range', 'Callback', @setrange);
 set(img_handle, 'UIContextMenu', hcmenu);
 
 %Create status bar
+drawnow;
 jFrame = get(fig,'JavaFrame');
 jFigPanel = get(jFrame,'FigurePanelContainer');
-jRootPane = jFigPanel.getComponent(0).getRootPane;
-jRootPane = jRootPane.getTopLevelAncestor;
-statusbarObj = com.mathworks.mwswing.MJStatusBar;
-jRootPane.setStatusBar(statusbarObj);
-set(fig, 'ResizeFcn', @resize_update);
-
+try
+    jRootPane = jFigPanel.getComponent(0).getRootPane;
+    jRootPane = jRootPane.getTopLevelAncestor;
+    statusbarObj = com.mathworks.mwswing.MJStatusBar;
+    jRootPane.setStatusBar(statusbarObj);
+    statusbarObj.setText('')
+catch
+    statusbarObj = [];
+end
 D.p = p;
 D.img = img;
 D.handles = handles;
@@ -178,11 +182,18 @@ D.img_handle = img_handle;
 setappdata(fig, 'imager', D);
 current_img = [];
 set(fig, 'WindowButtonMotionFcn', @get_img_value);
-reslice([],[],[]); 
+ 
 drawnow;
-SBH = get(statusbarObj, 'height');
-set(fig, 'position', get(fig, 'position')+[0 0 0 SBH]);
+if isempty(statusbarObj)
+    SBH = 0; 
+else
+    SBH = get(statusbarObj, 'height');
+end
+set(fig, 'ResizeFcn', @resize_update);
+reslice([],[],[]);
+set(fig, 'position', get(fig, 'position')+[0 -SBH/2 0 SBH]);
 resize_update;
+
 
     function reslice(hObject, eventdata, view)
         
@@ -302,7 +313,9 @@ resize_update;
 
 
     function get_img_value(~,~,~)
-        
+       if isempty(statusbarObj)
+           return;
+       end
        cp = get(gca, 'CurrentPoint');
        dp = round([cp(1,2) cp(1,1)]);
        if dp(1)>0 && dp(1)<size(img,1)+0.5 && dp(2)>0 && dp(2)<size(img,2)+0.5

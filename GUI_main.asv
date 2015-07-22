@@ -729,8 +729,8 @@ handles.getSINODATA = @getSINODATA;
     function snapshot(~,~)
         rngmin = str2num(get(handles.displayscale_min, 'String'));
         rngmax = str2num(get(handles.displayscale_max, 'String'));
-        imager(handles.current_img, 'range', [rngmin rngmax], 'statusbar', 0);         
-        set(gcf, 'Position', double([0 0 handles.hdr_short.ImageWidth handles.hdr_short.ImageHeight]));
+        imager(handles.current_img, 'range', [rngmin rngmax], 'statusbar', 0); 
+        set(gcf, 'Position', get(gcf, 'Position').*[1 1 0 0] +[0 0 handles.hdr.);
         
         %Copy scalebar
         sb = copyobj(handles.scalebar{1}, gca);

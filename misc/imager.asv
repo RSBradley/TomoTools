@@ -24,7 +24,7 @@ p.addOptional('axes', []);
 p.addOptional('loadfcn', []);
 p.addOptional('updatefcn', [], @(x) iscell(x));
 p.addOptional('name', []);
-p.addOptional('statusbar', 1);
+p.addOptional('statusbar', []);
 p.parse(varargin{:});
 
 %p.Results
@@ -162,19 +162,15 @@ set(img_handle, 'UIContextMenu', hcmenu);
 
 %Create status bar
 drawnow;
-if p.Results.statusbar
-    try
-        jFrame = get(fig,'JavaFrame');    
-        jFigPanel = get(jFrame,'FigurePanelContainer');
-        jRootPane = jFigPanel.getComponent(0).getRootPane;
-        jRootPane = jRootPane.getTopLevelAncestor;
-        statusbarObj = com.mathworks.mwswing.MJStatusBar;
-        jRootPane.setStatusBar(statusbarObj);
-        statusbarObj.setText('')
-    catch
-        statusbarObj = [];
-    end
-else
+try
+    jFrame = get(fig,'JavaFrame');    
+    jFigPanel = get(jFrame,'FigurePanelContainer');
+    jRootPane = jFigPanel.getComponent(0).getRootPane;
+    jRootPane = jRootPane.getTopLevelAncestor;
+    statusbarObj = com.mathworks.mwswing.MJStatusBar;
+    jRootPane.setStatusBar(statusbarObj);
+    statusbarObj.setText('')
+catch
     statusbarObj = [];
 end
 D.p = p;

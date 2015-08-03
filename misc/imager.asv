@@ -24,7 +24,7 @@ p.addOptional('axes', []);
 p.addOptional('loadfcn', []);
 p.addOptional('updatefcn', [], @(x) iscell(x));
 p.addOptional('name', []);
-p.addOptional('statusbar', []);
+p.addOptional('statusbar', 1);
 p.parse(varargin{:});
 
 %p.Results
@@ -121,15 +121,14 @@ if multiple_imgs
     try
         set(handles.scrollbar, 'Interruptible', 'off', 'BusyAction', 'cancel');
         set(handles.scrollbar, 'AdjustmentValueChangedCallback', @reslice);
-        
+        get(handles.scrollbar)
         
     catch
         %2014a onwards behaviour
         handles.scrollbar = handle(handles.scrollbar, 'CallbackProperties');
         set(handles.scrollbar, 'AdjustmentValueChangedCallback', @reslice)
         
-    end
-    
+    end    
     
     %Create labels
     handles.slicelabel = javax.swing.JLabel(sprintf('%6d',1));
@@ -162,15 +161,19 @@ set(img_handle, 'UIContextMenu', hcmenu);
 
 %Create status bar
 drawnow;
-try
-    jFrame = get(fig,'JavaFrame');    
-    jFigPanel = get(jFrame,'FigurePanelContainer');
-    jRootPane = jFigPanel.getComponent(0).getRootPane;
-    jRootPane = jRootPane.getTopLevelAncestor;
-    statusbarObj = com.mathworks.mwswing.MJStatusBar;
-    jRootPane.setStatusBar(statusbarObj);
-    statusbarObj.setText('')
-catch
+if p.Results.statusbar
+    try
+        jFrame = get(fig,'JavaFrame');    
+        jFigPanel = get(jFrame,'FigurePanelContainer');
+        jRootPane = jFigPanel.getComponent(0).getRootPane;
+        jRootPane = jRootPane.getTopLevelAncestor;
+        statusbarObj = com.mathworks.mwswing.MJStatusBar;
+        jRootPane.setStatusBar(statusbarObj);
+        statusbarObj.setText('')
+    catch
+        statusbarObj = [];
+    end
+else
     statusbarObj = [];
 end
 D.p = p;
@@ -198,12 +201,12 @@ resize_update;
 
     function reslice(hObject, eventdata, view)
         
-        tic
-        
+        tic        
         try
-            if get(hObject, 'ValueIsAdjusting')
+            if strcmpi(get(hObject, 'ValueIsAdjusting'), 'on')                
                 
-                return;
+                    return;
+                end
             end
         catch
         end
@@ -219,7 +222,8 @@ resize_update;
         
         %Calculate image number
         if ~isempty(handles.scrollbar)
-            img_no = round((1+(handles.scrollbar.getValue-1)/10));
+            handles.scrollbar.getValue
+            img_no = round((1+(handles.scrollbar.getValue-1)/10))
             set(handles.slicelabel, 'Text', sprintf('%6d',img_no));
         else
             img_no = 1;

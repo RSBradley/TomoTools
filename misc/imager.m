@@ -121,15 +121,14 @@ if multiple_imgs
     try
         set(handles.scrollbar, 'Interruptible', 'off', 'BusyAction', 'cancel');
         set(handles.scrollbar, 'AdjustmentValueChangedCallback', @reslice);
-        
+        get(handles.scrollbar)
         
     catch
         %2014a onwards behaviour
         handles.scrollbar = handle(handles.scrollbar, 'CallbackProperties');
         set(handles.scrollbar, 'AdjustmentValueChangedCallback', @reslice)
         
-    end
-    
+    end    
     
     %Create labels
     handles.slicelabel = javax.swing.JLabel(sprintf('%6d',1));
@@ -202,16 +201,20 @@ resize_update;
 
     function reslice(hObject, eventdata, view)
         
-        tic
-        
-        try
-            if get(hObject, 'ValueIsAdjusting')
-                
+        tic  
+        val_adj = get(hObject, 'ValueIsAdjusting');
+        if ischar(val_adj)
+            if strcmpi(val_adj, 'on')     
                 return;
+            else
+                set(hObject,'ValueIsAdjusting','on')
             end
-        catch
-        end
-        set(hObject,'ValueIsAdjusting',1)
+        elseif val_adj 
+            return
+        else
+            set(hObject,'ValueIsAdjusting',1)
+        end            
+        
         D = getappdata(fig, 'imager');
         handles = D.handles;
         img = D.img;
@@ -222,7 +225,7 @@ resize_update;
         img_handle = D.img_handle;
         
         %Calculate image number
-        if ~isempty(handles.scrollbar)
+        if ~isempty(handles.scrollbar)            
             img_no = round((1+(handles.scrollbar.getValue-1)/10));
             set(handles.slicelabel, 'Text', sprintf('%6d',img_no));
         else
@@ -272,7 +275,11 @@ resize_update;
         end
         
         toc
-        set(hObject,'ValueIsAdjusting',1)
+        if ischar(val_adj)
+            set(hObject,'ValueIsAdjusting','on')
+        else
+            set(hObject,'ValueIsAdjusting',1)
+        end
     end
 
 

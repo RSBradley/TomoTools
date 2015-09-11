@@ -25,7 +25,6 @@ p.addOptional('loadfcn', []);
 p.addOptional('updatefcn', [], @(x) iscell(x));
 p.addOptional('name', []);
 p.addOptional('statusbar', 1);
-p.addOptional('autoresize', 1);
 p.parse(varargin{:});
 
 %p.Results
@@ -53,7 +52,7 @@ end
 if ~isempty(p.Results.name)
     set(fig, 'Name', p.Results.name);
 end
-set(fig, 'units', 'pixels');
+
 pos = get(fig, 'Position');
 pos(3) = pos(4)*size(img,2)/size(img,1);
 apr = size(img,2)/size(img,1);
@@ -196,11 +195,8 @@ else
 end
 set(fig, 'ResizeFcn', @resize_update);
 reslice([],[],[]);
-if p.Results.autoresize
-    set(fig, 'ResizeFcn', @resize_update);
-    set(fig, 'position', get(fig, 'position')+[0 -SBH/2 0 SBH]);
-    resize_update;
-end
+set(fig, 'position', get(fig, 'position')+[0 -SBH/2 0 SBH]);
+resize_update;
 
 
     function reslice(hObject, eventdata, view)

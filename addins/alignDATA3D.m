@@ -82,11 +82,7 @@ moving = [];
 movingReg = [];
 moving_tmp = [];
 fixed_tmp = [];
-if show_wb
-    options.Title = 'alignDATA3D';
-    options.InfoString = 'Aligning data sets...';
-    w = TTwaitbar(0, options);
-end
+
 ROI = DATA3D_moving.ROI;
 ind1 = ROI(1,1):ROI(2,1):ROI(3,1);
 ind2 = ROI(1,2):ROI(2,2):ROI(3,2);
@@ -162,16 +158,22 @@ if mcrop
     DY = IP(2)+control_sz(4)+10;
     S = p(4)-DY;
     DX = (p(3)-S)/2;
-    a = axes('parent', f, 'units', 'pixels', 'position', [DX DY S S]);
+    a = axes('parent', f, 'units', 'pixels', 'position', [DX DY S S]);    
     %View shifts
     set(f, 'Name', ['alignDATA3D:  Image 1/' num2str(TotImages) '  ' num2str(DATA3D_fixed.angles(1)) 'deg']);
     curr_ind = 1;
-    show_img(f_inds(curr_ind));
-    h = imrect(a);
+    show_img(f_inds(curr_ind));  
+    hp = [get(a, 'Xlim') get(a, 'Ylim')];
+    h = imrect(a, hp([1 3 2 4]));
     waitfor(f);
     return
 else
     %Automatic mode
+    if show_wb
+        options.Title = 'alignDATA3D';
+        options.InfoString = 'Aligning data sets...';
+        w = TTwaitbar(0, options);
+    end
     for n = f_inds
         [mval, matching_inds(n)] = min(abs(DATA3D_moving.angles-DATA3D_fixed.angles(n)));
     
@@ -187,7 +189,9 @@ else
             moving = medfilt2(moving, filt_sz*[1 1]);
             fixed = medfilt2(fixed, filt_sz*[1 1]);
         end
-        tform.T(3,1:2)
+        %tform.T(3,1:2)
+        tform = [];
+        run_align;
         tformC{n} = tform;
         shifts(n,:) = tform.T(3,1:2);
     
@@ -195,7 +199,7 @@ else
             TTwaitbar(n/DATA3D_fixed.dimensions(3),w);        
         end
     end
-    
+    return;
 end
 
 
@@ -297,8 +301,11 @@ end
     function run_align_m(~,~)        
         
         rect = round(h.getPosition);
-        fixed = fixed(rect(2):rect(2)+rect(4),rect(1):rect(1)+rect(3));
-        moving = moving(rect(2):rect(2)+rect(4),rect(1):rect(1)+rect(3));
+        rect = [max(1,rect(2)), min(size(fixed,1), rect(2)+rect(4)), max(1,rect(1)), min(size(fixed,2),rect(1)+rect(3))];
+        %fixed = fixed(rect(2):rect(2)+rect(4),rect(1):rect(1)+rect(3));
+        fixed = fixed(rect(1):rect(2),rect(3):rect(4));
+        %moving = moving(rect(2):rect(2)+rect(4),rect(1):rect(1)+rect(3));
+        moving = moving(rect(1):rect(2),rect(3):rect(4));
         PyramidLevels = str2num(get(PyramidLevelsC, 'String'));
         TransType = get(TransformC, 'Value');
         switch TransType
@@ -405,7 +412,7 @@ end
             moving = medfilt2(moving, filt_sz*[1 1]);
             fixed = medfilt2(fixed, filt_sz*[1 1]);
         end
-        imager(cat(3,fixed, moving), 'fig', f, 'axes',a);        
+        imager(cat(3,fixed, moving), 'fig', f, 'axes',a, 'statusbar',0, 'autoresize',0);        
         
     end
 

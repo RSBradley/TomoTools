@@ -20,7 +20,7 @@ subpanel_pos = handles.defaults.subpanel_pos;
 set(0, 'units', 'pixels');
 scrsz = get(0, 'MonitorPositions');
 if size(scrsz,1)>1
-    %S8ide by side monitor setup
+    %Side by side monitor setup
     [~,mind] = min(abs(scrsz(:,1)));
     scrsz = scrsz(mind,:);    
 end
@@ -800,6 +800,9 @@ handles.show_queue = uicontrol('Style', 'pushbutton', 'Parent', handles.action_p
     'String', 'View queue', 'Callback', @view_queue);
 colorbutton(handles.show_queue, handles.defaults.queue_colour(2,:), [1 1 1]+0*handles.defaults.queue_colour(2,:), 'edge');
 
+
+
+
     %Nested function to switch to action panel
     function switch_panel(hObject,~,~)
         ff_enable = get(handles.flatfield_cbox, 'Enable');
@@ -888,7 +891,15 @@ colorbutton(handles.show_queue, handles.defaults.queue_colour(2,:), [1 1 1]+0*ha
     function view_queue(~,~,~)        
         handles.view_queue();
     end
-
+    
+    function resizefig(~,~,~)
+        
+       %Define movable elements
+       
+        
+        
+        
+    end
 
 
 

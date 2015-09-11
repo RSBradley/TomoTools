@@ -51,6 +51,9 @@ end
 
 %Determine image size
 img_size = [foh.ImageInfo.ImageWidth foh.ImageInfo.ImageHeight];
+if nargin<2
+    image_no  = 1:double(foh.ImageInfo.NoOfImages);
+end
 nimgs = numel(image_no);
 img = [];
 if nimgs>1

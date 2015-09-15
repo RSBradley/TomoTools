@@ -189,11 +189,13 @@ current_img = [];
 set(fig, 'WindowButtonMotionFcn', @get_img_value);
  
 drawnow;
+pause(0.01)
 if isempty(statusbarObj)
     SBH = 0; 
 else
     SBH = get(statusbarObj, 'height');
 end
+
 set(fig, 'ResizeFcn', @resize_update);
 reslice([],[],[]);
 if p.Results.autoresize

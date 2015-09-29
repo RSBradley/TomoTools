@@ -25,6 +25,9 @@ classdef DATA3D < handle
         units = [];
         pixel_units =[];
         ROIread = [];
+        
+        %coordinates
+        coords = [];        
     end
     properties (SetAccess = private)
         file %file name
@@ -295,7 +298,25 @@ classdef DATA3D < handle
             %Set defaults
             obj.slice_nos = []; %initialise slice
             obj.current_voxel = [];
-            obj.ROI = [1 1 1;1 1 1;obj.dimensions]; %initialise ROI        
+            obj.ROI = [1 1 1;1 1 1;obj.dimensions]; %initialise ROI 
+            
+            
+            %Set coordinates
+            if isfield(header, 'Coordinates')
+                obj.coords.x.position = header.Coordinates.X.Position;
+                obj.coords.x.direction = header.Coordinates.X.Direction;
+                obj.coords.y.position = header.Coordinates.Y.Position;
+                obj.coords.y.direction = header.Coordinates.Y.Direction;
+                obj.coords.z.position = header.Coordinates.Z.Position;
+                obj.coords.z.direction = header.Coordinates.Z.Direction;
+            else                
+                obj.coords.x.position = 0;
+                obj.coords.x.direction = 1;
+                obj.coords.y.position = 0;
+                obj.coords.y.direction = 1;
+                obj.coords.z.position = 0;
+                obj.coords.z.direction = 1;
+            end
             
         end
         

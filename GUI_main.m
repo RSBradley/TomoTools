@@ -200,21 +200,32 @@ posmax =  get(handles.displayscale_maxtext, 'Position');
     
 handles.displayscale_max =  uicontrol('Style', 'edit', 'Parent', handles.fopen_panel, 'Position', [posmax(1)+posmax(3)+margin posmax(2) 6*margin posmax(4)],...
         'HorizontalAlignment', 'Left', 'BackgroundColor', [1 1 1], 'Callback', @slice_change, 'Enable', 'off' , 'Tag', 'TTmainopts');     
+
+posmax =  get(handles.displayscale_max, 'Position');  
     
-handles.calc_histogram = uicontrol('Style', 'pushbutton', 'Parent', handles.fopen_panel, 'String', 'Histogram', ...
-         'Position', [posmin(1) posmax(2)-5*margin 8*margin 1.5*posmax(4)],'Callback', @plot_histogram, 'Enable', 'off', 'Tag', 'TTmainopts'); 
-colorbutton(handles.calc_histogram,0.2*[1 1 1]+0.8*handles.defaults.open_colour(2,:), [1 1 1]+0*handles.defaults.open_colour(2,:),'edge');   
+handles.calc_histogram = uicontrol('Style', 'pushbutton', 'Parent', handles.fopen_panel, 'String', ['<html><img src="file:/' handles.defaults.hist_icon '"/></html>'], ...
+         'Position', [posmax(1)+posmax(3)+margin posmax(2) 28 28],'Callback', @plot_histogram, 'Enable', 'off', 'Tag', 'TTmainopts'); 
+%colorbutton(handles.calc_histogram,0.2*[1 1 1]+0.8*handles.defaults.open_colour(2,:), [1 1 1]+0*handles.defaults.open_colour(2,:),'edge');   
      
 posc = get(handles.calc_histogram, 'Position');
-handles.curr_position_x = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [posc(1)+posc(3)+4*margin posc(2) pos(3) pos(4)],...
+handles.curr_position_x = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [pos(1)+3*margin posc(2)-5*margin pos(3) pos(4)],...
         'HorizontalAlignment', 'Left', 'String', 'x:','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour, 'Tag', 'TTmainopts'); 
-handles.curr_position_y = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [posc(1)+posc(3)+pos(3)+5*margin posc(2) pos(3) pos(4)],...
+handles.curr_position_y = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [pos(1)+pos(3)+3.5*margin posc(2)-5*margin pos(3) pos(4)],...
         'HorizontalAlignment', 'Left', 'String', 'y:','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour, 'Tag', 'TTmainopts'); 
+
+handles.curr_position_z = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [pos(1)+2*pos(3)+4*margin posc(2)-5*margin pos(3) pos(4)],...
+        'HorizontalAlignment', 'Left', 'String', 'z:','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour, 'Tag', 'TTmainopts');     
     
-handles.curr_img_value = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [posc(1)+posc(3)+2*pos(3)+6*margin posc(2) 2*pos(3) pos(4)],...
+handles.curr_img_value = uicontrol('Style', 'text', 'Parent', handles.fopen_panel, 'Position', [pos(1)+3*pos(3)+4.5*margin posc(2)-5*margin 2*pos(3) pos(4)],...
         'HorizontalAlignment', 'Left', 'String', 'value:','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour, 'Tag', 'TTmainopts');   
+
+   
+handles.set_coords = uicontrol('Style', 'pushbutton', 'Parent', handles.fopen_panel, 'Position', [posc(1) posc(2)-5*margin 28 28], 'String', ['<html><img src="file:/' handles.defaults.coordinates_icon '"/></html>'],...
+        'Callback', @set_coordinates, 'Enable', 'off', 'Tag', 'TTmainopts');       
+
     
-     
+    
+    
 %Crop boxes
 posmax = get(handles.displayscale_max, 'Position');
 margin_new = pos(1);
@@ -293,6 +304,9 @@ handles.current_imgh = @() get_img;
 
 %scalebar
 handles.scalebar = [];
+
+%set coordinates
+handles.use_coordinates = 0;
 
 handles.getDATA = @getDATA;
 handles.getSINODATA = @getSINODATA;
@@ -535,6 +549,7 @@ handles.getSINODATA = @getSINODATA;
         axis_mode = {'linear', 'log'};
         axistype_cbox = uicontrol('Style', 'checkbox', 'Parent', f,...
                                     'BackgroundColor', handles.defaults.panel_colour, 'Position',[fpos(3)-75-25-80 fpos(4)-40 65 30], 'String', 'Log axis', 'Callback', {@(x, y, z) set(gca, 'YScale', axis_mode{get(x, 'Value')+1})});
+        drawnow;
         pause(0.01)
         fpos = get(f, 'Position');
         do_stop = 0;
@@ -617,12 +632,24 @@ handles.getSINODATA = @getSINODATA;
     function image_curr_val(~,~,~) 
         if handles.do_pointer_val
             if ~isempty(handles.image)
-                cp = get(handles.preview_axes, 'CurrentPoint');
+                cp = get(handles.preview_axes, 'CurrentPoint');                
                 dp = round([cp(1,2) cp(1,1)]);
+                dz = get(handles.preview_scroll, 'Value');
                 if dp(1)>0 && dp(1)<handles.hdr_short.ImageHeight+0.5 && dp(2)>0 && dp(2)<handles.hdr_short.ImageWidth+0.5
-                    set(handles.curr_position_x, 'String', ['x: ' num2str(dp(2))]);
-                    set(handles.curr_position_y, 'String', ['y: ' num2str(dp(1))]);
-                    set(handles.curr_img_value, 'String', ['value: ' sprintf('%12.5g',handles.current_img(dp(1), dp(2)))]);
+                    if handles.use_coordinates                         
+                        xp = handles.DATA.coords.x.direction*(dp(2)-0.5*double(handles.hdr_short.ImageWidth))*handles.hdr_short.PixelSize+handles.DATA.coords.x.position;
+                        yp = handles.DATA.coords.y.direction*(dp(1)-0.5*double(handles.hdr_short.ImageHeight))*handles.hdr_short.PixelSize+handles.DATA.coords.y.position;
+                        zp = handles.DATA.coords.z.direction*(dz-0.5*double(handles.hdr_short.NoOfImages))*handles.hdr_short.PixelSize+handles.DATA.coords.z.position;
+                        set(handles.curr_position_x, 'String', ['x: ' sprintf('%6.3g',xp)]);
+                        set(handles.curr_position_y, 'String', ['y: ' sprintf('%6.3g',yp)]);
+                        set(handles.curr_position_z, 'String', ['y: ' sprintf('%6.3g',zp)]);
+                        set(handles.curr_img_value, 'String', ['value: ' sprintf('%-9.5g',handles.current_img(dp(1), dp(2)))]);                        
+                    else
+                    	set(handles.curr_position_x, 'String', ['x: ' num2str(dp(2))]);
+                        set(handles.curr_position_y, 'String', ['y: ' num2str(dp(1))]);
+                        set(handles.curr_position_z, 'String', ['y: ' sprintf('%6.3g',dz)]);
+                        set(handles.curr_img_value, 'String', ['value: ' sprintf('%-9.5g',handles.current_img(dp(1), dp(2)))]);
+                    end
                 end
                 %Crop cursor
                 %Determine crop range
@@ -679,6 +706,54 @@ handles.getSINODATA = @getSINODATA;
        end
         
     end
+
+
+    function set_coordinates(~,~)
+       %  handles.defaults.panel_colour
+       f = figure('MenuBar', 'none');
+       set(f, 'Name', 'Set coordinates','NumberTitle','off', 'Color',handles.defaults.panel_colour, 'position',[544 414 396 211], 'CloseRequestFcn', @close_coords);       
+       h2 = uicontrol('Parent',f, 'Position',[30 170 120 23],'String','Show coordinates','HorizontalAlignment', 'left',...
+            'Style','checkbox', 'value',handles.use_coordinates, 'BackgroundColor', handles.defaults.panel_colour);
+       h3 = uicontrol('Parent',f, 'Position',[75 134 100 14],'String','Centre coordinates','HorizontalAlignment', 'center',...
+            'Style','text','BackgroundColor', handles.defaults.panel_colour);
+       h4 = uicontrol('Parent',f, 'Position',[225 134 100 14],'String','Axis direction','HorizontalAlignment', 'center',......
+            'Style','text','BackgroundColor', handles.defaults.panel_colour); 
+       h5 = uicontrol('Parent',f, 'Position',[30 100 40 14],'String','x:','HorizontalAlignment', 'right',...
+            'Style','text','BackgroundColor', handles.defaults.panel_colour); 
+       h6 = uicontrol('Parent',f, 'Position',[30 68 40 14],'String','y:','HorizontalAlignment', 'right',...
+            'Style','text','BackgroundColor', handles.defaults.panel_colour);
+       h7 = uicontrol('Parent',f, 'Position',[30 36 40 14],'String','z:','HorizontalAlignment', 'right',...
+            'Style','text','BackgroundColor', handles.defaults.panel_colour);
+       h8 = uicontrol('Parent',f, 'Position',[100 100 65 16],'String',num2str(handles.DATA.coords.x.position),'HorizontalAlignment', 'right',...
+            'Style','edit', 'BackgroundColor', [1 1 1]); 
+       h9 = uicontrol('Parent',f, 'Position',[100 68 65 16],'String',num2str(handles.DATA.coords.y.position),'HorizontalAlignment', 'right',...
+            'Style','edit', 'BackgroundColor', [1 1 1]);
+       h10 = uicontrol('Parent',f, 'Position',[100 36 65 16],'String',num2str(handles.DATA.coords.z.position),'HorizontalAlignment', 'right',...
+            'Style','edit', 'BackgroundColor', [1 1 1]); 
+       h11 = uicontrol('Parent',f, 'Position',[230 102 65 16],'String',{'negative';'positive'},'HorizontalAlignment', 'right',...
+            'Style','popupmenu', 'BackgroundColor', [1 1 1],'value', (handles.DATA.coords.x.direction+3)/2); 
+       h12 = uicontrol('Parent',f, 'Position',[230 70 65 16],'String',{'negative';'positive'}, 'HorizontalAlignment','right',...
+            'Style','popupmenu', 'BackgroundColor', [1 1 1],'value', (handles.DATA.coords.y.direction+3)/2);
+       h13 = uicontrol('Parent',f, 'Position',[230 38 65 16],'String',{'negative';'positive'}, 'HorizontalAlignment','right',...
+            'Style','popupmenu', 'BackgroundColor', [1 1 1],'value', (handles.DATA.coords.z.direction+3)/2);  
+       
+        function close_coords(~,~)
+        
+            handles.use_coordinates = get(h2,'value');            
+            if handles.use_coordinates
+                handles.DATA.coords.x.position = str2num(get(h8, 'String'));
+                handles.DATA.coords.y.position = str2num(get(h9, 'String'));
+                handles.DATA.coords.z.position = str2num(get(h10, 'String'));
+                
+                handles.DATA.coords.x.direction = 2*(get(h11,'Value'))-3;
+                handles.DATA.coords.y.direction = 2*(get(h12,'Value'))-3;
+                handles.DATA.coords.z.direction = 2*(get(h13,'Value'))-3;                
+            end
+            delete(gcf);
+            
+        end 
+    end
+
 
 
     function show_queue(~,~)

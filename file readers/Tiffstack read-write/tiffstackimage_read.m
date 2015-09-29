@@ -12,6 +12,10 @@ end
 if nargin<5
     read_fcn = 'readtif';
 end
+if ~strcmpi(foh.Imfinfo(1).Compression, 'Uncompressed')
+    
+   read_fcn = 'imread'; 
+end
 if nargin<3
     apply_ref = 1;
 end
@@ -98,7 +102,7 @@ end
        cd([matlabroot '\toolbox\matlab\imagesci\private']);
        img = readtif(FileName,1,'Info', i);
        cd(tmp); 
-        
+       
         
         
     end
@@ -107,9 +111,6 @@ end
         
        FileName = foh.FileNames{foh.UseInds(image_no)};
        img = imread(FileName);
-        
-        
-        
         
     end
 

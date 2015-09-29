@@ -36,8 +36,7 @@ for n = 1:numel(Y)
    if Yscaled(n)>0
      Xnew(count:count+Yscaled(n)-1) = X(n);  
      count = count+Yscaled(n);
-   end
-    
+   end    
 end
 
 
@@ -47,10 +46,18 @@ end
 [Ynew,~,fbw] = ssvkernel(Xnew,X, (X(2)-X(1)).*[0.5:0.5:20]);
 
 
-
 %Ynew = Y/(X(2)-X(1));
-[pk,locs] = findpeaks(Ynew);
+try
+    [pk,locs] = findpeaks(Ynew);
+catch
+    [pk,locs] = findpeaks(Y);
+end
 
+if isempty(pk)
+    errordlg('No peaks found')
+    set(gcbf, 'Pointer', 'arrow');
+    return;
+end
 ind=find(pk>0.01*max(pk(:)));
 pk = pk(ind);
 locs = locs(ind);

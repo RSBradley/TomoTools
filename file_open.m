@@ -132,7 +132,8 @@ switch FileContents(1)
             handles.update_text{2} = {'X shift', hdr_short.Shifts(:,1)};  
             handles.update_text{3} = {'Y shift', hdr_short.Shifts(:,2)};  
         end
-        do_scalebar = 1;
+        do_scalebar = 1;        
+        set(handles.set_coords,'Enable', 'off');
     case 'R'
         %Reconstruction images
 %        set(handles.flatfield_cbox, 'Enable', 'off', 'Value', 0);                    
@@ -141,7 +142,8 @@ switch FileContents(1)
         %handles.DATA.apply_ff_default
         handles.do_flatfield = 0;    
         do_scalebar = 1;
-
+        handles.do_flatfield = 0;    
+        set(handles.set_coords,'Enable', 'on');
     case 'S'
         %Sinogram stack
 %        set(handles.flatfield_cbox, 'Enable', 'off', 'Value', 0);                    
@@ -150,6 +152,7 @@ switch FileContents(1)
         handles.do_flatfield = 0;  
         handles.SINODATA = SINO_DATA3D(handles.DATA);
         do_scalebar = 0;
+        set(handles.set_coords,'Enable', 'off');
 end
 
 %Loop over modules to enable/disable
@@ -326,6 +329,9 @@ set(handles.snapshot_btn, 'Visible', 'on');
 set(handles.zoomin_btn, 'Visible', 'on');
 set(handles.zoomout_btn, 'Visible', 'on');
 set(handles.pan_btn, 'Visible', 'on');
+
+%Set stage coordinates
+handles.use_coordinates = 0;     
 
 end
 

@@ -53,6 +53,8 @@ defaults.snapshot_icon = strrep([p '\icons\snapshot20.png'], '\', '/');
 defaults.zoomin_icon = strrep([p '\icons\zoom_in20.png'], '\', '/');
 defaults.zoomout_icon = strrep([p '\icons\zoom_out20.png'], '\', '/');
 defaults.pan_icon = strrep([p '\icons\move20.png'], '\', '/');
+defaults.hist_icon = strrep([p '\icons\hist16.png'], '\', '/');
+defaults.coordinates_icon = strrep([p '\icons\location20.png'], '\', '/');
 
 %Colours for cropping
 defaults.crop_col = [0.8 0.8 0];

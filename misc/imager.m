@@ -196,7 +196,7 @@ else
     SBH = get(statusbarObj, 'height');
 end
 
-set(fig, 'ResizeFcn', @resize_update);
+%set(fig, 'ResizeFcn', @resize_update);
 reslice([],[],[]);
 if p.Results.autoresize
     set(fig, 'ResizeFcn', @resize_update);

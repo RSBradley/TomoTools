@@ -21,7 +21,7 @@ imageJPath = handles.defaults.imageJ_path;
 %% PANEL NAME==========================================================
 mod_hdl.name = 'Phase retrieval';
 mod_hdl.version = '1.0';
-mod_hdl.target = 'PR';
+mod_hdl.target = 'P';
 
 %% PHASE RETRIEVAL Panel=================================================
 mod_hdl.panel = uipanel('Parent', handles.action_panel, 'Units', 'normalized', 'Position', subpanel_pos, 'Title', 'Phase retrieval', 'visible', 'off');

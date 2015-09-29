@@ -42,8 +42,8 @@ subpanel_sz = get(mod_hdl.panel, 'Position');
 %Load short scan
 mod_hdl.Load_btn = uicontrol('Style', 'pushbutton', 'Parent', mod_hdl.panel, 'String', 'Load short scan', 'units', 'pixels', 'Callback', @load_short_scan);
 set(mod_hdl.Load_btn, 'position', [0 0 1.5*button_sz(1) button_sz(2)], 'HorizontalAlignment', 'left', 'UserData', [1 1]); 
-mod_hdl.File_label = uicontrol('Style', 'text', 'Parent', mod_hdl.panel, 'String', ' ', 'units', 'pixels', 'Visible', 'off');
-set(mod_hdl.File_label, 'position', [0 0 2*edit_sz(1) edit_sz(2)], 'HorizontalAlignment', 'left', 'UserData', [2 1]);
+mod_hdl.File_label = uicontrol('Style', 'text', 'Parent', mod_hdl.panel, 'String', repmat(' ', [1 256]), 'units', 'pixels', 'Visible', 'off');
+set(mod_hdl.File_label, 'position', [0 0 edit_sz(1) edit_sz(2)], 'HorizontalAlignment', 'left', 'UserData', [2 1]);
 
 %View short scan
 mod_hdl.ViewSS_btn = uicontrol('Style', 'pushbutton', 'Parent', mod_hdl.panel, 'String', 'View short scan', 'units', 'pixels', 'enable', 'off', 'Callback', @shortscan_preview);
@@ -53,19 +53,19 @@ set(mod_hdl.ViewSS_btn, 'position', [0 0 1.5*button_sz(1) button_sz(2)], 'Horizo
 mod_hdl.ImageStep_label = uicontrol('Style', 'text', 'Parent', mod_hdl.panel, 'String', 'Image step:', 'units', 'pixels', 'enable', 'on');
 set(mod_hdl.ImageStep_label, 'position', label_sz, 'HorizontalAlignment', 'right', 'UserData', [1 3]); 
 mod_hdl.ImageStep = uicontrol('Style', 'edit', 'Parent', mod_hdl.panel, 'String', '1', 'units', 'pixels', 'enable', 'on');
-set(mod_hdl.ImageStep, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2 3], 'BackgroundColor', [1 1 1]); 
+set(mod_hdl.ImageStep, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2.1 3], 'BackgroundColor', [1 1 1]); 
 
 %Pyramid levels
 mod_hdl.PyramidLevels_label = uicontrol('Style', 'text', 'Parent', mod_hdl.panel, 'String', 'Pyramid levels:', 'units', 'pixels', 'enable', 'on');
 set(mod_hdl.PyramidLevels_label, 'position', label_sz, 'HorizontalAlignment', 'right', 'UserData', [1 4]); 
 mod_hdl.PyramidLevels = uicontrol('Style', 'edit', 'Parent', mod_hdl.panel, 'String', '2', 'units', 'pixels', 'enable', 'on');
-set(mod_hdl.PyramidLevels, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2 4], 'BackgroundColor', [1 1 1]);
+set(mod_hdl.PyramidLevels, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2.1 4], 'BackgroundColor', [1 1 1]);
 
 %Optimizer intitial radius
 mod_hdl.OptRadius_label = uicontrol('Style', 'text', 'Parent', mod_hdl.panel, 'String', 'Optimizer radius:', 'units', 'pixels', 'enable', 'on');
 set(mod_hdl.OptRadius_label, 'position', label_sz, 'HorizontalAlignment', 'right', 'UserData', [1 5]); 
 mod_hdl.OptRadius = uicontrol('Style', 'edit', 'Parent', mod_hdl.panel, 'String', '0.0005', 'units', 'pixels', 'enable', 'on');
-set(mod_hdl.OptRadius, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2 5], 'BackgroundColor', [1 1 1]);
+set(mod_hdl.OptRadius, 'position', control_sz, 'HorizontalAlignment', 'left', 'UserData', [2.1 5], 'BackgroundColor', [1 1 1]);
 
 
 %View shifts
@@ -78,7 +78,7 @@ set(mod_hdl.ViewShifts_btn, 'position', [0 0 1.5*button_sz(1) button_sz(2)], 'Ho
 ch = findobj('Parent', mod_hdl.panel, 'Style', 'text');
 uitextsize(ch);
 
-simple_layout(mod_hdl.panel, 'LT-RM', margin*[3 4 1 1]);
+simple_layout(mod_hdl.panel, 'LT-LM', margin*[3 4 1 1]);
 
 %% RUN FUNCTION ========================================================            
 mod_hdl.run_function = @(h,q) run_alignment(h, mod_hdl,q);     %FIX!!!!
@@ -145,7 +145,8 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
             mod_hdl.apply_ff=0;
         end
         set(mod_hdl.ViewSS_btn, 'enable', 'on');
-        set(mod_hdl.File_label, 'Visible', 'on');
+        set(mod_hdl.File_label, 'Visible', 'on', 'String', [dir filename]);
+        
         msgbox('File successfully loaded.', [mod_hdl.name ' ' mod_hdl.version]);
 
     end

@@ -131,7 +131,7 @@ if mcrop
     set(Spinner_label, 'position', label_sz, 'HorizontalAlignment', 'right', 'UserData', [5 2]); 
     spinner_model = javax.swing.SpinnerNumberModel(1,1,DATA3D_moving.dimensions(3),1);
     jspinner = javax.swing.JSpinner(spinner_model);
-    [Spinner hSpinner] = javacomponent(jspinner, [10,10,60,20], f);
+    [Spinner, hSpinner] = javacomponent(jspinner, [10,10,60,20], f);
     set(hSpinner, 'UserData', [6 2])
     set(Spinner, 'StateChangedCallback', @update_match);
     
@@ -155,10 +155,14 @@ if mcrop
     
     IP = get(PyramidLevelsC, 'Position');
     
+    
+    apr = [DATA3D_fixed.dimensions(1) DATA3D_fixed.dimensions(2)]/max(DATA3D_fixed.dimensions(1:2));
     DY = IP(2)+control_sz(4)+10;
     S = p(4)-DY;
     DX = (p(3)-S)/2;
-    a = axes('parent', f, 'units', 'pixels', 'position', [DX DY S S]);    
+    a = axes('parent', f, 'units', 'pixels', 'position', [DX DY apr(2)*S apr(1)*S]);
+    set(f, 'ResizeFcn', {@resize, [DY apr]});
+    
     %View shifts
     set(f, 'Name', ['alignDATA3D:  Image 1/' num2str(TotImages) '  ' num2str(DATA3D_fixed.angles(1)) 'deg']);
     curr_ind = 1;
@@ -415,10 +419,20 @@ end
         imager(cat(3,fixed, moving), 'fig', f, 'axes',a, 'statusbar',0, 'autoresize',0);        
         
     end
+    
+    function resize(hObject, eventdata, DP)
+        DY = DP(1);
+        apr = DP(2:end);
+        p = get(gcf, 'Position');
+        S = p(4)-DY;
+        if S>p(3)
+            S = p(3);
+        end
+        DX = (p(3)-S)/2;
+        set(a, 'position', [DX DY apr(2)*S apr(1)*S]);
+        
 
-
-
-
+    end
 
 end
 

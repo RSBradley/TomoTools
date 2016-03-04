@@ -26,7 +26,9 @@ end
 switch hdr.Format
     case 'tiffstack'    
         %Read stack header info
-        [theader, th_short]= tiffstackheader_read(hdr.File,0,0);
+        [~, fn, ext] = fileparts(hdr.File);
+        pth = fileparts(file);        
+        [theader, th_short]= tiffstackheader_read([pth '\' fn ext],0,0);
         
         %Check stack dimensions
         ddiff = [hdr.ImageWidth hdr.ImageHeight hdr.NoOfImages]-[th_short.ImageWidth th_short.ImageHeight th_short.NoOfImages];

@@ -139,12 +139,6 @@ end
 
 function calc_prescaling_eqn(~,~,mod_hdl)
 
-    %Choose mode: fit full cdf or only peaks
-    button = questdlg('Select fitting mode:','Prescaling','peaks','cdf', 'peaks');
-    
-    switch button
-        case 'peaks'
-
     %Calculate using peak positions
     answers = inputdlg({'Enter peak positions for current data:','Enter peak positions for reference data:', 'Enter order of polynomial fit:'}, 'Calculate pre-scaling from peak positions', 1, {'','','1'}); 
     
@@ -158,23 +152,7 @@ function calc_prescaling_eqn(~,~,mod_hdl)
     
     p = polyfit(str2num(answers{1}),str2num(answers{2}),str2num(answers{3}));
     
-        case 'cdf'
-        [FileName,PathName,FilterIndex] = uigetfile('*.fig', 'Select reference histogram');
-         openfig([PathName FileName]);  
-         ch = get(gca, 'Children');
-         xdata_ref = get(ch(1),'XData');   
-         ydata_ref = get(ch(1),'YData');
-         ydata_ref = cumsum(ydata_ref)/sum(ydata_ref(:));
-         
-         [FileName,PathName,FilterIndex] = uigetfile('*.fig', 'Select current histogram');
-         openfig([PathName FileName]);    
-         ch = get(gca, 'Children');
-         xdata = get(ch(1),'XData');   
-         ydata = get(ch(1),'YData');
-         ydata = cumsum(ydata)/sum(ydata(:));
-         [cdf_adj xparams] = fit_cdf([xdata(:) ydata(:)],[xdata_ref(:) ydata_ref(:)]);
-         p = xparams;
-    end
+    
     pstr = [];
     for  pp = 1:numel(p)
        order = numel(p)-pp; 

@@ -133,9 +133,11 @@ switch output_format
         %Check write_function to use
         if ~isfield(options, 'encoding')
             options.encoding = 'binary';            
-        end       
+        end 
+        options.stack = 0;
         info.Format = 'am';
         write = @writeam;
+        outputfn_ext = '.am'
         if do_ext
            outputfn = [outputfn '.am'];
         end

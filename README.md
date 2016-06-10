@@ -43,7 +43,6 @@ TomoTools is open source under the GPLv3 license.
 Dr Rob S Bradley,
 Henry Moseley X-ray Imaging Facility, The University of Manchester
 
-email:
-website: www.mxif.manchester.ac.uk
+email: tomotoolsgui@gmail.com
 
 Copyright: 2013-2016, R. S. Bradley

@@ -15,9 +15,9 @@ TomoTools
   Apply phase retrieval to radiographs containing inline phase contrast. Currently supported algorithms are TIE-HOM (Paganin) and Phase-Attenuation Duality (PAD). Phase retrieval can be incorporated into reconstruction, see below
 
 ### 3. Reconstruction
-  A plugin for the ASTRA reconstruction toolbox. It features pre-processing such as finding the centre of rotation, ring artefact reduction, hot-pixel removal and sinogram padding. Parallel beam and cone beam geometries are supported. Filtered backprojection or iterative algorithms can be selected. 
+  A plugin for the ASTRA reconstruction toolbox. It features pre-processing such as finding the centre of rotation, ring artefact reduction, hot-pixel removal and sinogram padding. Parallel beam geometry is supported. Cone beam geometry is partially supported (work in progress). Filtered backprojection or iterative algorithms can be selected. 
 
-  Tested with ASTRA version 1.5 and 1.6
+  Tested with ASTRA version 1.5, 1.6 and 1.7
 
 ### 4. Alignment
   Correct sample drift in long scans by comparing projections to those in a short scan (e.g. 21 projections). Rigid transformations are supported and a semi-automatic mode can be selected.
@@ -46,4 +46,4 @@ Henry Moseley X-ray Imaging Facility, The University of Manchester
 email:
 website: www.mxif.manchester.ac.uk
 
-Copyright: 2013-2015, R. S. Bradley
+Copyright: 2013-2016, R. S. Bradley

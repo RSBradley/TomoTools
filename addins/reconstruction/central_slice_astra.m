@@ -267,7 +267,7 @@ else
     
     %pre filter sinograms  
     if strcmpi(algorithm(1:2), 'BP')
-        s = filterProjections(s, filt, (R12(1)+R12(2)), pixel_size, [], [dsx dsy+mid_plane]./M);
+        s = filterProjections(s, filt, (R12(1)+R12(2)), pixel_size, angles, [dsx dsy+mid_plane]./M);
     end
     
     

@@ -516,7 +516,7 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        %Apply ring removal and despeckle
        raind = get(mod_hdl.ringartefact_method,'Value');
        ds = str2double(get(mod_hdl.despeckle, 'String'));
-       
+       size(s)
        if ~isempty(RAmethods{raind,3}) | ds>0
 
             %Apply before taking -ve log!
@@ -533,9 +533,11 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        if ~isempty(RAmethods{raind,3})
            %ring artefact reduction
            try
-                ra_params = str2cell(strtrim(get(mod_hdl.ringartefact_params, 'String')));                
+                ra_params = str2cell(strtrim(get(mod_hdl.ringartefact_params, 'String')))              
                 s = RAmethods{raind,3}(s,ra_params);                
            catch
+               RAmethods{raind,3}
+               s = RAmethods{raind,3}(s,ra_params);
                 disp('Error: ring artefact reduction cannot be applied. Please check input parameters');
            end
        end
@@ -604,6 +606,8 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        %imager(s)
        %pause
        %s(:,1:80,:)=0;
+       assignin('base', 's',s);
+       assignin('base', 'current_angs',current_angs);
        
        %SORT OUT NEGATIVE!!
        [r, cs_iter] = central_slice_astra(s, -pi*(current_angs+angs_shift)/180, R12, pixel_size, [], cs, [], r_dims, options);
@@ -821,7 +825,7 @@ raind = get(mod_hdl.ringartefact_method,'Value');
 RAmethods = cat(1,{'none', {},[]},RAmethods);
 if ~isempty(RAmethods{raind,3})
     %ring artefact reduction
-    ra_params = str2cell(get(mod_hdl.ringartefact_params, 'String'));   
+    ra_params = str2cell(strtrim(get(mod_hdl.ringartefact_params, 'String')));   
     recon_params.ring_artefact_method = RAmethods{raind,3}; 
     recon_params.ring_artefact_params = ra_params;
 end
@@ -921,7 +925,7 @@ if ~rf
 end
 
 
-
+save([recon_params.reconstruction_dir '\recon_params.mat'],'recon_params')
 assignin('base', 'recon_params', recon_params)
 
 

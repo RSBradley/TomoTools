@@ -51,8 +51,8 @@ if ~isinf(R12)
     U = permute(repmat(Uo.^2, [1 1 size(p,2)]), [1 3 2]);
     V = permute(repmat(V.^2, [1 1 size(p,2)]), [1 3 2]);
     
-    p = p.*R12./sqrt(R12^2+U+V);
-    
+    p = p.*R12./sqrt(R12.^2+U+V);
+   
     if ang_span<2*pi()-2*pi()/180
         
         %Apply Parker reweight
@@ -63,10 +63,7 @@ if ~isinf(R12)
         
         gamma =  repmat(atan(Uo(:,1)/R12), [1 size(p,2)]);
         
-        size(gamma)
-        size(angles)
-        size(fan_angle)
-        
+         
         wtm = ones(size(gamma));
         
         test1 = angles<=fan_angle-2*gamma;

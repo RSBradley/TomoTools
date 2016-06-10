@@ -3,9 +3,11 @@ function TTreconstruction(recon_params, create_sino)
 if nargin<2
     create_sino = 1;
 end
+if strcmpi(recon_params.SD.DATA3D_h.contents, 'sinograms')
+    create_sino = 0;
+end
 
-create_sino = 0;
-
+%create_sino = 0;
 %Create sinograms
 if isempty(dir([recon_params.sinogram_dir '\*.tif'])) | create_sino    
     
@@ -49,6 +51,7 @@ recon_params.SD = DATA3D(fs, hdr_short);
 %Run reconstruction
 switch recon_params.geometry
     case 'parallel beam'
+        recon_params
         pb_reconstruction_astra(recon_params)
         return;
         
@@ -64,6 +67,8 @@ switch recon_params.geometry
             
         else
             %USE ASTRA
+            shifts
+            pause
             pb_reconstruction_astra(recon_params, shifts)
         end
     case 'cone beam'

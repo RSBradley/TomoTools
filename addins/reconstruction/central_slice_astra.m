@@ -1,4 +1,4 @@
-function [r Nval]= central_slice_astra(s, angles, R12, pixel_size, shifts, centre_shift, filt, output_size, options)
+function [r, Nval, mask]= central_slice_astra(s, angles, R12, pixel_size, shifts, centre_shift, filt, output_size, options)
 
 
 
@@ -7,7 +7,6 @@ function [r Nval]= central_slice_astra(s, angles, R12, pixel_size, shifts, centr
 %pixel_size = pixel_size at object plane
 
 %% Process inputs and set defaults
-
 %Filter
 if nargin<7 || isempty(filt)
     filt = 'Ram-Lak';
@@ -78,7 +77,7 @@ else
 end
 if isfield(options, 'GPUindex')
     %GPU selection
-    GPUindex = options.GPUindex;
+    GPUindex = options.GPUindex-1;
 else
     GPUindex = 0;
 end
@@ -110,7 +109,15 @@ if isfield(options, 'mask');
 else
    do_mask = 0;
 end
-
+if isfield(options, 'rotation_direction')
+    %Do something?
+end
+if isfield(options, 'gpu_memory_limit')
+    gpu_mem_limit = options.gpu_memory_limit;
+    %Do something?
+else
+    gpu_mem_limit = Inf;
+end
 %Convert angles to radian as necessary
 if max(angles(:))>10    
    angles = angles*pi()/180; 
@@ -119,6 +126,9 @@ end
 %% SET UP GEOMETRY and ASTRA config
 if isinf(R12(1))
     %parallel beam geometry
+    if size(s,3)>1
+       s = s(:,:,round(size(s,3)/2)); 
+    end
     if strcmpi(centre_shift_mode, 'fft')
         if size(s,3)==1
             proj_geom = astra_create_proj_geom('parallel', 1.0, size(s,1), angles(:)');        
@@ -244,7 +254,7 @@ else
     proj_geom.DetectorRowCount = size(s,3);
     proj_geom.DetectorColCount = size(s,1);
     proj_geom.Vectors = vectors;    
-    vol_geom = astra_create_vol_geom([output_size(1), output_size(2),size(s,3)]);
+    vol_geom = astra_create_vol_geom([output_size(1), output_size(2),1]); %size(s,3)
     
     %mid_plane = 0*mid_plane/pixel_size(2)+300
     
@@ -299,6 +309,13 @@ if show_wb
     wb = TTwaitbar(0, wbopt);
 end
 
+ang_block = floor(size(s,2)/floor(((numel(s)+output_size(1)*output_size(2))*8)/(gpu_mem_limit*1024*1024)));
+ang_blocks = 1:ang_block:size(s,2);
+if ang_blocks(end)<size(s,2)
+    ang_blocks = [ang_blocks size(s,2)];
+end
+
+
 %Reconstruct
 for n = 1:N  
     if Nval==1
@@ -314,7 +331,7 @@ for n = 1:N
             cs = centre_shift;
         end
         options.mask = single((X.^2 + Y.^2 < (minR-abs(cs))^2));
-        options.mask = repmat(options.mask, [1 1 size(s,3)]);
+        options.mask = repmat(options.mask, [1 1 1]);%size(s,3)
         if strcmpi(centre_shift_mode, 'fft') 
             cfg.option.ReconstructionMaskId = astra_mex_data2d_c('create', '-vol', vol_geom, options.mask);
         else
@@ -364,12 +381,13 @@ for n = 1:N
             tic;
             astra_mex_algorithm('run', alg_id, iterations);
             r(:,:,n) = astra_mex_data3d('get', rec_id);
+            astra_mex_data2d('delete', sino_id);
+            astra_mex_data2d('delete', rec_id);
+            astra_mex_algorithm('delete', alg_id);
         end
         t = toc;
         fprintf(1, ['Done in ' num2str(t) 's.\n']);
-        astra_mex_data2d('delete', sino_id);
-        astra_mex_data2d('delete', rec_id);
-        astra_mex_algorithm('delete', alg_id);
+        
         
     else
         %s1 = sinogram3D_shift(s, shifts+centre_shift(n)); 
@@ -382,10 +400,16 @@ for n = 1:N
             iterations = iterationsO(n);
         end
         %Update geometry
-        proj_geom1.Vectors(:,4) = proj_geom.Vectors(:,4) -cs*cos(angles);
-        proj_geom1.Vectors(:,5) = proj_geom.Vectors(:,5) -cs*sin(angles);
+        proj_geom1.Vectors(:,4) = proj_geom.Vectors(:,4) -cs*cos(angles(:));
+        proj_geom1.Vectors(:,5) = proj_geom.Vectors(:,5) -cs*sin(angles(:));        
         
-        sino_id = astra_mex_data3d('create','-sino', proj_geom1, s);
+        
+        for nangs = 1:numel(ang_blocks)-1
+            
+        proj_geom2 = proj_geom1;
+        proj_geom2.Vectors = proj_geom2.Vectors(ang_blocks(nangs):ang_blocks(nangs+1)-1,:);
+            
+        sino_id = astra_mex_data3d('create','-sino', proj_geom2, s(:,ang_blocks(nangs):ang_blocks(nangs+1)-1,:));
         rec_id = astra_mex_data3d('create', '-vol', vol_geom);
         
         cfg.ProjectionDataId = sino_id;
@@ -397,12 +421,12 @@ for n = 1:N
         tmp = astra_mex_data3d('get_single', rec_id);
  
         
-        r(:,:,n) = tmp(:,:,round(size(tmp,3)/2));
+        r(:,:,n) = r(:,:,n)+tmp(:,:,round(size(tmp,3)/2));
         
         astra_mex_data3d('delete', sino_id);
         astra_mex_data3d('delete', rec_id);
         astra_mex_algorithm('delete', alg_id);
-        
+        end
         toc
     end
     
@@ -421,6 +445,7 @@ if show_wb
      close(wb);
 end
 
+mask = options.mask;
 
 
 %astra_mex_data2d('delete', rec_id);

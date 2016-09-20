@@ -212,7 +212,6 @@ if rotby90
     %img = rot90(img);
     %img = img(end:-1:1,:);
 end
-
 %Close file if necessary
 %if isempty(foh.FileIdentifier{1})
 %    fclose(fid);

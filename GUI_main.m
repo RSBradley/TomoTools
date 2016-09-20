@@ -2,7 +2,12 @@ function handles = GUI_main(handles)
 
 %Main function for generating the TomoTools GUI
 % Written by: Robert S. Bradley (c) 2015
-   
+
+%Check Matlab verion
+v = ver;
+vn = {v.Name};
+R = v(find(strcmpi(vn, 'MATLAB'))).Release;
+R = str2num(R(3:end-2));
 
 %% LOAD DEFAULTS FOR SIZING COMPONENTS =================================
 version = handles.defaults.version;
@@ -151,19 +156,23 @@ pos = get(handles.info_text, 'position');
 handles.previewframe = uipanel('parent', handles.fopen_panel, 'units', 'pixels', 'BorderType', 'line','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour);
 set(handles.previewframe, 'position', [panel_sz(3)-axes_sz(1)-2*margin, pos(2)+pos(4)-axes_sz(2)-10 axes_sz(1) axes_sz(2)+10]);
 
+
 %old pos = [pos(1)+pos(3)+margin, pos(2)+pos(4)-axes_sz(2)-10 axes_sz(1) axes_sz(2)+10]
 
 handles.licence_txt = uicontrol('Style', 'text', 'parent', handles.previewframe, 'position', [5*margin 10*margin axes_sz(1)-10*margin axes_sz(2)-30*margin], 'String', get_license, 'HorizontalAlignment', 'Left','BackgroundColor', handles.defaults.panel_colour,'ForegroundColor', handles.defaults.text_colour);
 
-handles.ruler_btn = uicontrol('Style', 'push', 'parent', handles.previewframe, 'position', [axes_sz(1)-48 axes_sz(2)+10 24 24], 'String', ['<html><img src="file:/' handles.defaults.ruler_icon '"></html>'], 'Callback', @ruler, 'Visible', 'off');
-handles.snapshot_btn = uicontrol('Style', 'push', 'parent', handles.previewframe, 'position', [axes_sz(1)-24 axes_sz(2)+10 24 24], 'String', ['<html><img src="file:/' handles.defaults.snapshot_icon '"></html>'],'Callback', @snapshot,'Visible', 'off');
-handles.zoomin_btn = uicontrol('Style', 'push', 'parent', handles.previewframe, 'position', [axes_sz(1)-72 axes_sz(2)+10 24 24], 'String', ['<html><img src="file:/' handles.defaults.zoomin_icon '"/></html>'], 'Callback', {@Zoom, 1/handles.defaults.zoom_step}, 'Visible', 'off');
-handles.zoomout_btn = uicontrol('Style', 'push', 'parent', handles.previewframe, 'position', [axes_sz(1)-96 axes_sz(2)+10 24 24], 'String', ['<html><img src="file:/' handles.defaults.zoomout_icon '"/></html>'],'Callback', {@Zoom, handles.defaults.zoom_step},'Visible', 'off');
-handles.pan_btn = uicontrol('Style', 'togglebutton', 'parent', handles.previewframe, 'position', [axes_sz(1)-120 axes_sz(2)+10 24 24], 'String', ['<html><img src="file:/' handles.defaults.pan_icon '"/></html>'],'Callback', 'pan;','Visible', 'off');
 
 
 handles.preview_axes = axes('parent', handles.fopen_panel, 'units', 'pixels');
 set(handles.preview_axes, 'position', [panel_sz(3)-axes_sz(1)-2*margin, pos(2)+pos(4)-axes_sz(2) axes_sz(1) axes_sz(2)], 'visible', 'off');
+
+axes_pos = get(handles.preview_axes, 'Position');
+handles.ruler_btn = uicontrol('Style', 'push', 'parent', handles.fopen_panel, 'position', [axes_pos(1)+axes_pos(3)-48 axes_pos(2)+axes_pos(4)+2 24 24], 'String', ['<html><img src="file:/' handles.defaults.ruler_icon '"></html>'], 'Callback', @ruler, 'Visible', 'off');
+handles.snapshot_btn = uicontrol('Style', 'push', 'parent', handles.fopen_panel, 'position', [axes_pos(1)+axes_pos(3)-24 axes_pos(2)+axes_pos(4)+2 24 24], 'String', ['<html><img src="file:/' handles.defaults.snapshot_icon '"></html>'],'Callback', @snapshot,'Visible', 'off');
+handles.zoomin_btn = uicontrol('Style', 'push', 'parent', handles.fopen_panel, 'position', [axes_pos(1)+axes_pos(3)-72 axes_pos(2)+axes_pos(4)+2 24 24], 'String', ['<html><img src="file:/' handles.defaults.zoomin_icon '"/></html>'], 'Callback', {@Zoom, 1/handles.defaults.zoom_step}, 'Visible', 'off');
+handles.zoomout_btn = uicontrol('Style', 'push', 'parent', handles.fopen_panel, 'position', [axes_pos(1)+axes_pos(3)-96 axes_pos(2)+axes_pos(4)+2 24 24], 'String', ['<html><img src="file:/' handles.defaults.zoomout_icon '"/></html>'],'Callback', {@Zoom, handles.defaults.zoom_step},'Visible', 'off');
+handles.pan_btn = uicontrol('Style', 'togglebutton', 'parent', handles.fopen_panel, 'position', [axes_pos(1)+axes_pos(3)-120 axes_pos(2)+axes_pos(4)+2 24 24], 'String', ['<html><img src="file:/' handles.defaults.pan_icon '"/></html>'],'Callback', 'pan;','Visible', 'off');
+
 
 %Slice changer for preview image
 handles.preview_scroll = uicontrol('Style', 'slider', 'parent', handles.fopen_panel, 'Position',  [panel_sz(3)-axes_sz(1)-2*margin, pos(2)+pos(4)-axes_sz(2)-2*margin axes_sz(1) 2*margin],...
@@ -395,7 +404,7 @@ handles.getSINODATA = @getSINODATA;
         img_no = round(get(handles.preview_scroll, 'Value'));                
         handles.DATA.apply_ff=handles.do_flatfield; 
         
-        img = single(handles.DATA(:,:,img_no));        
+        img = single(handles.DATA(:,:,img_no));          
         handles.current_img = img;
         
         rngmin = str2num(get(handles.displayscale_min, 'String'));
@@ -642,12 +651,12 @@ handles.getSINODATA = @getSINODATA;
                         zp = handles.DATA.coords.z.direction*(dz-0.5*double(handles.hdr_short.NoOfImages))*handles.hdr_short.PixelSize+handles.DATA.coords.z.position;
                         set(handles.curr_position_x, 'String', ['x: ' sprintf('%6.3g',xp)]);
                         set(handles.curr_position_y, 'String', ['y: ' sprintf('%6.3g',yp)]);
-                        set(handles.curr_position_z, 'String', ['y: ' sprintf('%6.3g',zp)]);
+                        set(handles.curr_position_z, 'String', ['z: ' sprintf('%6.3g',zp)]);
                         set(handles.curr_img_value, 'String', ['value: ' sprintf('%-9.5g',handles.current_img(dp(1), dp(2)))]);                        
                     else
                     	set(handles.curr_position_x, 'String', ['x: ' num2str(dp(2))]);
                         set(handles.curr_position_y, 'String', ['y: ' num2str(dp(1))]);
-                        set(handles.curr_position_z, 'String', ['y: ' sprintf('%6.3g',dz)]);
+                        set(handles.curr_position_z, 'String', ['z: ' sprintf('%6.3g',dz)]);
                         set(handles.curr_img_value, 'String', ['value: ' sprintf('%-9.5g',handles.current_img(dp(1), dp(2)))]);
                     end
                 end
@@ -766,7 +775,10 @@ handles.getSINODATA = @getSINODATA;
 
     function file_open_callback(~,~)  
         %FILE OPEN
-        handles = file_open(handles);        
+        handles = file_open(handles);  
+        if R>2015
+            set(handles.previewframe, 'Visible', 'off');
+        end
     end
 
 

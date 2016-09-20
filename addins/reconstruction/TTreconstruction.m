@@ -72,6 +72,6 @@ switch recon_params.geometry
             pb_reconstruction_astra(recon_params, shifts)
         end
     case 'cone beam'
-        %Todo
+        cb_reconstruction_astra(recon_params);
 
 end

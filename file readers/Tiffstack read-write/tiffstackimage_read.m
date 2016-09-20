@@ -1,4 +1,4 @@
-function img = tiffstackimage_read(foh, image_no, apply_ref,apply_filter,read_fcn)
+function img = tiffstackimage_read(foh, image_no, apply_ref,rotby90,apply_filter,read_fcn)
 
 
 %Check if header information is supplied
@@ -9,17 +9,19 @@ if ischar(foh)
 end
 
 %Check input arguments
-if nargin<5
+if nargin<6
     read_fcn = 'readtif';
 end
-if ~strcmpi(foh.Imfinfo(1).Compression, 'Uncompressed')
-    
+if ~strcmpi(foh.Imfinfo(1).Compression, 'Uncompressed')    
    read_fcn = 'imread'; 
 end
 if nargin<3
     apply_ref = 1;
 end
 if nargin<4
+    rotby90 = 0;
+end
+if nargin<5
     apply_filter = 1;
 end
 if apply_ref & ~isempty(foh.ReferenceCorrection.mode)
@@ -29,10 +31,14 @@ end
 
 %Loop over multiple images
 if numel(image_no)>1   
-   img = zeros([foh.ImageHeight, foh.ImageWidth, numel(image_no)], foh.DataType); 
-   for ni = 1:numel(image_no)
-      img(:,:,ni) =  tiffstackimage_read(foh, image_no(ni), apply_ref,apply_filter,read_fcn);
+   if rotby90
+       img = zeros([foh.ImageWidth, foh.ImageHeight, numel(image_no)], foh.DataType); 
+   else
+       img = zeros([foh.ImageHeight, foh.ImageWidth, numel(image_no)], foh.DataType); %ORIGINAL
    end
+   for ni = 1:numel(image_no)      
+      img(:,:,ni) =  tiffstackimage_read(foh, image_no(ni), apply_ref,rotby90,apply_filter,read_fcn);
+   end   
    return;
 end
 
@@ -75,10 +81,17 @@ if apply_ref & ~isempty(foh.ReferenceCorrection.mode)
             end
            
    end
+   white_ref = single(white_ref);
+   black_ref = single(black_ref);  
    img = single(img);
    img = (img-black_ref)./(white_ref-black_ref);
 end
 
+%Rotate by 90 degrees
+if rotby90
+   img = img.';
+   img = img(end:-1:1,:);    
+end
 
 %readimage;
 

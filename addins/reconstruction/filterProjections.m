@@ -1,4 +1,4 @@
-function [p,H] = filterProjections(p_in, filter, R12, pixel_size, angles, detector_offsets, CS, d)
+function [p,H] = filterProjections(p_in, filter, R12, pixel_size, angles, detector_offsets, CS, d, usegpu)
 
 
 %assume p_in is cols x angles x rows
@@ -7,6 +7,9 @@ function [p,H] = filterProjections(p_in, filter, R12, pixel_size, angles, detect
 
 p = p_in;
 
+if nargin<9
+    usegpu = 0;
+end
 if nargin<8
     d=1;
 end
@@ -41,9 +44,9 @@ p(length(H),1)=0;  % Zero pad projections
 if ~isinf(R12)
    
     %FDK weight
-    [U V] = ndgrid(1:size(p,1), 1:size(p,3));
-    Uo = (U-(size(p,1)-1)/2)*pixel_size(1)+detector_offsets(1);
-    V = (V-(size(p,3)-1)/2)*pixel_size(2)+detector_offsets(2);
+    [U, V] = ndgrid(1:size(p,1), 1:size(p,3));
+    Uo = (U-(size(p,1)-1)/2+detector_offsets(1))*pixel_size(1);
+    V = (V-(size(p,3)-1)/2+detector_offsets(2))*pixel_size(2);
     
     Umin = min(U(:));
     Umax = max(U(:));
@@ -81,7 +84,9 @@ if ~isinf(R12)
 end
 
 
-
+if usegpu
+    p = gpuArray(p);
+end
 
 % In the code below, I continuously reuse the array p so as to
 % save memory.  This makes it harder to read, but the comments
@@ -95,6 +100,10 @@ p = fft(p).*repmat(H, [1 size(p,2) size(p,3)]);    % p holds fft of projections
 
 p = real(ifft(p));     % p is the filtered projections
 p(len+1:end,:,:) = [];   % Truncate the filtered projections
+
+if usegpu
+    p = gather(p);
+end
 %----------------------------------------------------------------------
 
 %======================================================================

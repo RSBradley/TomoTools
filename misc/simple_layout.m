@@ -76,9 +76,10 @@ end
 if max(relpos_o)==0
    return; 
 end
-ch_pos = ch_pos(~isnan(ch),:);
-relpos_o  = relpos_o (~isnan(ch),:);
-ch = ch(~isnan(ch));
+
+ch_pos = ch_pos(~isnan(double(ch)),:);
+relpos_o  = relpos_o (~isnan(double(ch)),:);
+ch = ch(~isnan(double(ch)));
 
 %Group controls as necessary
 relpos = floor(relpos_o);

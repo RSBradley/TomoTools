@@ -16,7 +16,7 @@ classdef DATA3D < handle
         hist_nbins %number of histogram bins
         store_imgs = 0; %flag to store slices in memory. 0 = no, 1 = discard and add, 2 = add.
         apply_ff = [];
-        rotby90 = [];
+        rotby90 = []; %copied to read function. NB image dimensions should reflect default rotation (see below)
         rotation = [];
         apply_rotation = [];
         shifts = [];
@@ -42,8 +42,8 @@ classdef DATA3D < handle
         pixel_size %pixel/voxel size
         
         apply_ff_default = [];
-        rotby90_default = [];
-        ROIread_default = [];
+        rotby90_default = []; %default rotation by 90 used for the read function. The data dimensions should take account of this rotation
+        ROIread_default = [];tmp
         
         %Optional properties
         angles = [] %for projections and sinograms
@@ -241,7 +241,7 @@ classdef DATA3D < handle
                case 'p'
                    %Default data range for projections
                    %obj.data_range = [0 1.2]; %greater than 1 for phase contrast
-                   obj.data_type = 'single'; %over ride data type for projection images
+                   %obj.data_type = 'single'; %over ride data type for projection images
                case 's'
                    %Default data range for sinograms
                    obj.data_range = [-log(1.2) -log(0.01)]; %to 1% transmission 
@@ -327,8 +327,7 @@ classdef DATA3D < handle
                 refimg = [];
             else
               
-                %refimg = obj.read_fcn([], [0, 0]);
-                obj.rotby90
+                %refimg = obj.read_fcn([], [0, 0]);                
                 refimg = obj.read_fcn([], {obj.apply_ff, obj.rotby90});
             end
             if iscell(refimg)
@@ -371,9 +370,9 @@ classdef DATA3D < handle
             end
             
             if do_rot% | obj.rotby90==obj.rotby90_default
-                cimg = zeros([obj.dimensions(1:2),n_slices], obj.data_type);
+                cimg = zeros([obj.dimensions(1:2),n_slices], 'single');%obj.data_type
             else
-                cimg = zeros([obj.dimensions([2 1]),n_slices], obj.data_type);
+                cimg = zeros([obj.dimensions([2 1]),n_slices], 'single');%obj.data_type
             end
             %Check if slice(s) are already stored in private imgs
             to_store = zeros(n_slices,1);
@@ -394,12 +393,11 @@ classdef DATA3D < handle
                 end                    
             end
             
-            load_inds = find(to_store>0);
-            if ~isempty(load_inds) 
+            load_inds = find(to_store>0);            
+            if ~isempty(load_inds)                 
                 cimg(:,:,load_inds) = obj.read_fcn(slices(load_inds), {obj.apply_ff, obj.rotby90});
             end
-            
-            
+                    
             %store read slices if necessary - need to restrict for memory?
             switch obj.store_imgs
                 case 1
@@ -445,8 +443,9 @@ classdef DATA3D < handle
             
             
             %Check if necessary to convert to 32 bit for projections only
-            if strcmpi(obj.contents(1), 'p')
-                cl = class(cimg);
+            %obj.apply_ff_default
+            if strcmpi(obj.contents(1), 'p') && obj.apply_ff_default==0
+                cl = obj.data_type;
                 if strfind(cl, 'uint')
                     cimg = single(cimg)/single(eval([cl '(inf);']));                    
                 end

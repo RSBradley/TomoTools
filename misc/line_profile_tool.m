@@ -39,14 +39,14 @@ yend_label = uicontrol ('Style', 'text', 'Parent', control_fig, 'Position', [130
 yend_box = uicontrol ('Style', 'edit', 'Parent', control_fig, 'Position', [180 17 50 20], 'HorizontalAlignment', 'Left', 'BackgroundColor', [1 1 1]);
 
 
-thickness_label = uicontrol ('Style', 'text', 'Parent', control_fig, 'Position', [250 70 50 20], 'string', 'line width:', 'HorizontalAlignment', 'Left');
+thickness_label = uicontrol ('Style', 'text', 'Parent', control_fig, 'Position', [250 70 50 20], 'string', 'width:', 'HorizontalAlignment', 'Left');
 v = uicontrol ('Style', 'edit', 'Parent', control_fig, 'Position', [310 72 50 20], 'HorizontalAlignment', 'Left', 'String', 1, 'BackgroundColor', [1 1 1]);
 
 go_btn = uicontrol('Style', 'pushbutton', 'String', 'Plot profile', 'position', [290 17 80 40], 'Callback', @plot_profile); 
 
 
 col = get(xstart_label, 'BackgroundColor');
-set(control_fig, 'Color', col);
+set(control_fig, 'Color', col, 'CloseRequestFcn', @close_controlfig);
 %Create patch
 p = patch([0 0 0 0], [0 0 0 0], [0.8 0.8 0], 'FaceAlpha', 0.45, 'parent', hparent, 'EdgeColor', 'none');
 
@@ -67,6 +67,15 @@ set(xend_box, 'Callback', @update_line);
 set(ystart_box, 'Callback', @update_line);
 set(yend_box, 'Callback', @update_line);
 set(v, 'Callback', @update_line);
+
+
+    function close_controlfig(~,~)
+
+       delete(hline);
+       delete(control_fig);
+       return;
+        
+    end
 
     function disp_pos(pos)
         pos = round(pos);
@@ -144,16 +153,33 @@ set(v, 'Callback', @update_line);
         %pause
         set(p, 'XData', x,'YData', y);
         
+%         if isempty(prof_fig);
+%             
+%             try
+%                 figure(prof_fig);
+%                 
+%             catch
+%                
+%             end
+%         end
+        
     end
 
 
     function plot_profile(hObject, eventdata, t)
         
         %Get image data
-        if isempty(img)
+        %if isempty(img)
             h_img = findobj(hparent,'Type', 'image');
             img = get(h_img, 'cdata');
+       % end
+        
+        %Check if greyscale image
+        sz = size(img);
+        if img(round(sz(1)/2), round(sz(1)/2),1)== mean(img(round(sz(1)/2), round(sz(1)/2),:))
+           img = img(:,:,1); 
         end
+        
         xstart = str2double(get(xstart_box, 'String'));
         xend = str2double(get(xend_box, 'String'));
         ystart = str2double(get(ystart_box, 'String'));
@@ -197,6 +223,7 @@ set(v, 'Callback', @update_line);
         dist = [0 dist];
         prof = zeros([size(dist,2) size(img,3)]);
         leg_str = cell(size(img,3),1);
+        
         for q = 1:size(img,3)            
             prof_full = interp2(double(img(:,:,q)), xnet, ynet);        
             prof(:,q) = squeeze(mean(prof_full,1)); 
@@ -205,8 +232,12 @@ set(v, 'Callback', @update_line);
         %pause
         if isempty(prof_fig);
             prof_fig = figure('Name', 'Line profiles');
-        else    
-            figure(prof_fig);
+        else 
+            try
+                figure(prof_fig);
+            catch
+               prof_fig = figure('Name', 'Line profiles');
+            end
         end
         
         %Plot lines
@@ -214,6 +245,7 @@ set(v, 'Callback', @update_line);
         LPT.profile = prof';
         LPT.std = std(prof_full,1)';
         assignin('base', 'LPT', LPT);
+        
         plot(dist,prof);
         hold on
         xlabel('distance (pixels)');

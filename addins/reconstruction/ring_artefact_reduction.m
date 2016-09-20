@@ -4,16 +4,18 @@ function [s_out, methods] = ring_artefact_reduction(s_in, method, params)
 %s_in: input sinogram with angles as rows and detector elements as columns.
 
 methods = {'raven', {9 0.9}, @(s,p) ring_artefact_reduction(s, 'raven', p);...
-            'median', {7,9}, @(s,p) ring_artefact_reduction(s, 'median', p);...
-            'gaussian-median', {11,9,1}, @(s,p) ring_artefact_reduction(s, 'gaussian-median', p);...
+            'median', {3,9}, @(s,p) ring_artefact_reduction(s, 'median', p);...
+            'gaussian-median', {11,9,3}, @(s,p) ring_artefact_reduction(s, 'gaussian-median', p);...
             'line ratios', {Inf,5}, @(s,p) ring_artefact_reduction(s, 'line ratios', p);...
-            'wavelet-fourier', {'db25', 5, 2.4}, @(s,p) ring_artefact_reduction(s, 'wavelet-fourier', p)};
+            'wavelet-fourier', {'db25', 3, 1.4}, @(s,p) ring_artefact_reduction(s, 'wavelet-fourier', p);...
+            'generalised Titarenko', {0.1}, @(s,p) ring_artefact_reduction(s, 'generalised Titarenko', p)};
         
 if nargin<1
     s_out = [];
     return;    
 end
-params
+s_in(s_in==Inf)=0;
+s_in(isnan(s_in))=0;
 if size(s_in,3)>1
     s_out = zeros(size(s_in));
     for nn = 1:size(s_in,3)
@@ -72,6 +74,7 @@ switch method
         ds = 1+ds./s_in;
         ds(s_in>params{1}) = Inf;
         dsmed = median(ds,1);
+        dsmed(isnan(dsmed)) = 1;
         dsprod = cumprod(dsmed,2);
         dsprod_sm = medfilt1(dsprod, params{2});
         
@@ -115,11 +118,21 @@ switch method
         
          s_out = s_out(1:size(s_in,1), 1:size(s_in,2));
          
-        
+      case 'generalised Titarenko'          
+        old = s_in';
+        alpha = params{1};
+        %alpha = alpha*std(std(old));
+        pp = sum(old')'/size(old,2);
+        h = [-1   2  -1];
+        f = -ringMatXvec(h,pp);
+        n1 = ringCGM(h,alpha,f);
+        new = old + kron(n1,ones(1,size(old,2)));
+        s_out = new';  
 
 end
 
 
+    %Slit sinograms into sections
     function so = do_section(si, N)
        
         so = si;
@@ -132,10 +145,40 @@ end
             so(r(n-1):r(n),:) = repmat(stmp, [r(n)-r(n-1)+1,1]);
             
         end
-        
-        
-        
-        
     end
+
+
+    %GTA helper functions--------------
+    function y = ringMatXvec(h,x) 
+        s = conv(x,fliplr(h));
+        u = s(length(h):length(x));
+        y = conv(u,h);
+    end
+    function  x = ringCGM(h,alpha,f)
+        x0 = zeros(size(f));
+        r = f - ringMatXvec(h,x0) - alpha*x0;
+        w = -r;
+	    z = ringMatXvec(h,w) + alpha*w;
+        a = (r'*w)/(w'*z);
+        x = x0 + a*w;
+        
+
+        for i = 1:10^6           
+            r = r - a*z;            
+            if(norm(r) < 1e-6)
+                break;  
+            end
+            B = (r'*z)/(w'*z);  
+            w = -r + B*w;
+            z = ringMatXvec(h,w) + alpha*w;
+            a = (r'*w)/(w'*z);
+            x = x + a*w;
+        end
+end
+    
+    
+    %----------------------------------
+    
+
 
 end

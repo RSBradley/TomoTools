@@ -34,7 +34,7 @@ p.parse(varargin{:});
 if isempty(p.Results.fig)      
     
     if isempty(p.Results.axes)
-        fig = figure('Name', inputname(1), 'Color', [0 0 0], 'Tag', 'imager', 'NumberTitle', 'off');    
+        fig = figure('Name', inputname(1), 'Color', [0.9 0.9 0.9], 'Tag', 'imager', 'NumberTitle', 'off');    
     else
         fig = get(p.Results.axes, 'parent');
     end
@@ -193,7 +193,16 @@ pause(0.01)
 if isempty(statusbarObj)
     SBH = 0; 
 else
-    SBH = get(statusbarObj, 'height');
+    %Check Matlab version
+    v =ver;
+    vn = {v.Name};
+    R = v(find(strcmpi(vn, 'MATLAB'))).Release;
+    R = str2num(R(3:end-2));
+    if R<2016
+        SBH = get(statusbarObj, 'height');
+    else
+        SBH = 0;
+    end
 end
 
 %set(fig, 'ResizeFcn', @resize_update);
@@ -285,7 +294,7 @@ end
             set(hObject,'ValueIsAdjusting','on')
         else
             set(hObject,'ValueIsAdjusting',1)
-        end
+        end        
     end
 
 
@@ -299,12 +308,21 @@ end
             maxval = num2str(d_range(2));
         end
         pause(0.01);
-        answer = inputdlg({'Range minimum:','Range maximum:'},'Enter display range',1,{minval, maxval});
+        answer = inputdlg({'Range minimum:','Range maximum:'},'Enter display range',1,{minval, maxval})
         %pause
         if ~isempty(answer)
-           if isempty(strfind(answer{1}, 'auto')) & isempty(strfind(answer{2}, 'auto'));
-                d_range = str2num(answer{1}); 
-                d_range(2) = str2num(answer{2}); 
+            test = [isempty(strfind(answer{1}, 'auto')) isempty(strfind(answer{2}, 'auto'))]
+            if sum(test)>0
+                if test(1)
+                    d_range = str2num(answer{1}); 
+                else
+                    d_range = curr_min;
+                end
+                if test(2)
+                    d_range(2) = str2num(answer{2}); 
+                else
+                    d_range(2) = curr_max;
+                end                
            else
                d_range = 'auto';
            end
@@ -321,12 +339,13 @@ end
 
     function resize_update(~,~)
         
-        
         newPos = get(fig,'Pos');        
         hratio = 1-SBH/newPos(4);
         minpos = [size(img,1)/(newPos(4)-SBH),size(img,2)/newPos(3)];
         ratio = min(minpos)./minpos;       
         set(a, 'position', [(1-ratio(1))/2 (1-ratio(2))/2+SBH/newPos(4) ratio(1) ratio(2)*hratio]);
+        pause(0.01);
+        drawnow;
     end
 
 

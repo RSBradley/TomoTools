@@ -45,7 +45,7 @@ end
 t = Tiff(header.FileNames{1}, 'r'); %CHANGED FROM TIFF1!!
 i = imfinfo(header.FileNames{1});
 header.Imfinfo = i;
-header.TiffStruct = t;
+header.TiffStruct = [];
 header.ImageHeight = t.getTag('ImageLength');
 header.ImageWidth = t.getTag('ImageWidth');
 bps = t.getTag('BitsPerSample');
@@ -199,7 +199,7 @@ header_short.File = header.FileNames;
 header_short.FileContents = header.StackContents;
 header_short.PixelSize = header.PixelSize;
 header_short.PixelUnits = 'microns';
-header_short.Units = 'microns';
+header_short.Units = 'm';
 header_short.ImageWidth = header.ImageWidth;
 header_short.ImageHeight = header.ImageHeight;
 header_short.NoOfImages = numel(header.UseInds);
@@ -208,6 +208,18 @@ if isfield(header, 'DataRange')
        header_short.DataRange = header.DataRange;
 else
     header_short.DataRange = [];
+end
+if isfield(header, 'ApplyRef')
+       header_short.ApplyRef = header.ApplyRef;
+else
+    header_short.ApplyRef = 0;
+end
+%Extra info for projection images
+if strcmpi(header.StackContents(1), 'P')
+     header_short.Angles = header.Angles;     
+     header_short.R1 = header.Geometry.R1;    
+     header_short.R2 = header.Geometry.R2;
+     header_short.ApplyRef =header.ApplyRef;
 end
 header_short.read_fcn = @(x, tmp) tiffstackimage_read(header,x, tmp{1}, tmp{2});
 t.close();
@@ -233,10 +245,10 @@ t.close();
         if val==1           
             set(handles.sourcedistance, 'Enable', 'off');
             set(handles.sourcedistance, 'String', 'Inf');
-            %set(handles.detectordistance, 'Enable', 'off');
+            set(handles.detectordistance, 'Enable', 'off');
         else
             set(handles.sourcedistance, 'Enable', 'on');
-            %set(handles.detectordistance, 'Enable', 'on');
+            set(handles.detectordistance, 'Enable', 'on');
         end
         update_dps
     end
@@ -292,8 +304,7 @@ t.close();
                 header.Geometry.R1 = str2num(get(handles.sourcedistance, 'String'));
                 header.Geometry.R2 = str2num(get(handles.detectordistance, 'String'));
                 header.Angles = eval(get(handles.angles, 'String'));
-                header.ReferenceCorrection = reference_info;
-                
+                header.ReferenceCorrection = reference_info;                
                 if strcmpi(reference_info.mode, 'multi');
                     %reference_info.white_ref
                     h = waitbar(0,'Loading references...');
@@ -441,7 +452,14 @@ t.close();
                         
                         
                     end
+                    header.ApplyRef = 1;
                     close(h);
+                elseif strcmpi(reference_info.mode, 'single');
+                    header.ReferenceCorrection.black_ref.data = imread(reference_info.black_ref.images);
+                    header.ReferenceCorrection.white_ref.data = imread(reference_info.white_ref.images);      
+                    header.ApplyRef = 1;
+                else
+                    header.ApplyRef = 0;
                 end
                 
                 

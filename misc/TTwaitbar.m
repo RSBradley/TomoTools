@@ -24,7 +24,7 @@ do_update = 0;
 do_busy = 0;
 if nargin==3
     wb = whichbar;
-    opts = getappdata(wb, 'options');
+    do_update = 1;
     create_wb = 0;
 elseif nargin==2 && all(ishghandle(whichbar, 'figure'))
     wb = whichbar;
@@ -34,8 +34,6 @@ elseif nargin==2 && all(ishghandle(whichbar, 'figure'))
 elseif nargin==2
     options = whichbar;
     create_wb = 1;
-elseif nargin==3
-    do_update = 1;
 end
 
 if (nargin == 0)

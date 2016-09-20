@@ -1,4 +1,4 @@
-function [img_out img_pmap] = remove_extreme_pixels1(img, filter_sz, n_sigmas, mode)
+function [img_out, img_pmap] = remove_extreme_pixels1(img, filter_sz, n_sigmas, mode, maxlim)
 
 %img = image data
 %filter_sz = size of filter used to estimate correct pixel value
@@ -7,6 +7,9 @@ function [img_out img_pmap] = remove_extreme_pixels1(img, filter_sz, n_sigmas, m
 
 if nargin<4
     mode = 'global';
+end
+if nargin<5
+    maxlim = [];
 end
 
 o_class = class(img);
@@ -20,7 +23,7 @@ h(floor(size(h,1)/2)+1, floor(size(h,1)/2)+1) = 0;
 if strcmpi(mode, 'local')
 
     %h = fspecial('average', filter_sz);
-    img_map = img-imfilter(img,h, 'symmetric')+100;
+    img_map = img-imfilter(img,h, 'symmetric')+img_mean1;
     img_mean = mean(img_map(:));
     img_std = std(img_map(:));
 else
@@ -38,10 +41,17 @@ img_limits = img_mean + n_sigmas*img_std*[-1 1];
 if img_limits(1)<0
     img_limits(1)=0;
 end
+if ~isempty(maxlim)
+    if img_limits(2)>maxlim;
+        img_limits(2)=maxlim;   
+    end
+end
+
 
 inds = find(img_map<=img_limits(1) | img_map>=img_limits(2));
 
 prob_map = exp(-((img_map-img_mean)./(2*img_std)).^2);
+prob_map(inds) = 0;
 
 tmp = imfilter(img.*prob_map,h, 'symmetric')./imfilter(prob_map,h, 'symmetric');
 
@@ -65,7 +75,6 @@ if nargout>1
     img_pmap = zeros(size(img));
     img_pmap(inds) = 1;
 end
-
 
 
 %if isempty(rows)

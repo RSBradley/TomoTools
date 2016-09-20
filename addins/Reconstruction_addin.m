@@ -1,4 +1,4 @@
-function mod_hdl = Reconstruction1_addin(handles)
+function mod_hdl = Reconstruction_addin(handles)
 
 % Panel addin for reconstruction with the ASTRA TOOLBOX
 % Written by: Rob S. Bradley (c) 2015
@@ -116,6 +116,10 @@ mod_hdl.recon_AnglesShift_label = uicontrol('Style', 'text', 'Parent', parentF, 
                             'position', label_sz.*[1 1 0.25 1], 'HorizontalAlignment', 'right','BackgroundColor',VTabs_opts.highlightcolor, 'UserData', [5 4]);
 mod_hdl.recon_AnglesShift = uicontrol('Style', 'edit', 'Parent', parentF, 'String', '0', 'units', 'pixels',...
                             'position', control_sz, 'HorizontalAlignment', 'left', 'BackgroundColor', [1 1 1], 'UserData', [6 4]);
+mod_hdl.recon_RotDir_label = uicontrol('Style', 'text', 'Parent', parentF, 'String', 'Direction:', 'units', 'pixels',...
+                            'position', label_sz.*[1 1 0.25 1], 'HorizontalAlignment', 'right','BackgroundColor',VTabs_opts.highlightcolor, 'UserData', [7 4]);
+mod_hdl.recon_RotDir = uicontrol('Style', 'edit', 'Parent', parentF, 'String', '1', 'units', 'pixels',...
+                            'position', control_sz, 'HorizontalAlignment', 'left', 'BackgroundColor', [1 1 1], 'UserData', [8 4]);
 
 
 mod_hdl.recon_Shifts_label = uicontrol('Style', 'text', 'Parent', parentF, 'String', 'Alignment shifts:', 'units', 'pixels',...
@@ -148,6 +152,10 @@ mod_hdl.GPUmemory_label = uicontrol('Style', 'text', 'Parent', parentF, 'String'
                 'position', label_sz.*[1 1 2 1], 'HorizontalAlignment', 'right','BackgroundColor',VTabs_opts.highlightcolor, 'UserData', [1 3]); 
 mod_hdl.GPUmemory = uicontrol('Style', 'edit', 'Parent', parentF, 'String', '200', 'units', 'pixels',...
                 'position', control_sz, 'HorizontalAlignment', 'left', 'BackgroundColor', [1 1 1], 'UserData', [2 3]);
+ mod_hdl.GPUDevice_label = uicontrol('Style', 'text', 'Parent', parentF, 'String', 'GPU Device:', 'units', 'pixels',...
+                'position', label_sz.*[1 1 2 1], 'HorizontalAlignment', 'right','BackgroundColor',VTabs_opts.highlightcolor, 'UserData', [3 3]);            
+mod_hdl.GPUDevice = uicontrol('Style', 'listbox', 'Parent', parentF, 'String', {'1'}, 'units', 'pixels',...
+                'position', control_sz, 'HorizontalAlignment', 'left', 'BackgroundColor', [1 1 1], 'UserData', [4 3]);
 mod_hdl.parallelcomp_label = uicontrol('Style', 'text', 'Parent', parentF, 'String', 'Use parallel computing:', 'units', 'pixels',...
                 'position', label_sz.*[1 1 2 1], 'HorizontalAlignment', 'right','BackgroundColor',VTabs_opts.highlightcolor, 'UserData', [1 4]); 
 mod_hdl.parallelcomp = uicontrol('Style', 'checkbox', 'Parent', parentF, 'String', '', 'units', 'pixels', 'value', do_parallel,'enable', enable_parallel,...
@@ -330,21 +338,20 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
         else
             SD.parallel_mode = 0;
         end
-       
-       
+        
        %Get preview slice number 
        prev_slice = eval(get(mod_hdl.previewslice, 'String'));
        
        %Get geometry
        geom = get(mod_hdl.geometry, 'Value');
        
-       %Get angles
+       %Get angles       
        angs = get(mod_hdl.recon_Angles, 'String');
        if strcmpi(angs, 'in file')
            angs = SD.angles;
        else
-           angs = eval(angs);    
-           if numel(angs~=SD.dimensions(1)) %error checking
+           angs = eval(angs);
+           if numel(angs)~=SD.dimensions(1) %error checking
                errordlg('Number of custom angles does not equal the number of projection images')
                return
            end
@@ -482,7 +489,7 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
                     end
                     %UPDATE ROI
                     SD.ROI = SD.DATA3D_h.ROI;
-                    
+                    row_range(row_range<1)=[];
                     mod_hdl.prev_sinogram = {{[1 SD.dimensions(1)], prev_slice, angs_skip, angs, shifts, R12, pixel_size, row_range},SD(:,:,row_range)};
                     set(mod_hdl.previewsino_btn, 'Enable', 'on');
                end
@@ -520,21 +527,24 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        if ~isempty(RAmethods{raind,3}) | ds>0
 
             %Apply before taking -ve log!
-            s = exp(-s);
+            s = exp(-s);           
             
             %Despeckle            
             if ds>0
-                s = remove_extreme_pixels1(s, [9 9], ds, 'local');
+                s = remove_extreme_pixels1(s, [9 9], ds, 'local',1);
             end
-            
             
             s = -log(s);
        end
+       
+       s(s==Inf)=0;
+       s(isnan(s))=0;
+       
        if ~isempty(RAmethods{raind,3})
            %ring artefact reduction
            try
-                ra_params = str2cell(strtrim(get(mod_hdl.ringartefact_params, 'String')))              
-                s = RAmethods{raind,3}(s,ra_params);                
+                ra_params = str2cell(strtrim(get(mod_hdl.ringartefact_params, 'String')));                 
+                s = RAmethods{raind,3}(s,ra_params);
            catch
                RAmethods{raind,3}
                s = RAmethods{raind,3}(s,ra_params);
@@ -570,7 +580,6 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
            s = s(:,abs(rng_x_shifts(1))+1:end-rng_x_shifts(2)-1,:);
            
        end
-       s(s==Inf)=0;
        
        if only_s
            imager(mod_hdl.prev_sinogram{2}{1},'name', 'original sinogram');
@@ -590,18 +599,19 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        r_dims(2) = eval(get(mod_hdl.recon_dims_h, 'String')); 
        
        %Algorithm
-       options.algorithm = algorithms{2,get(mod_hdl.algorithm, 'Value')};
+       options.algorithm = algorithms{2,get(mod_hdl.algorithm, 'Value')};       
        if get(mod_hdl.algorithm, 'Value')>1
             options.iterations = str2num(get(mod_hdl.algiter, 'String'));            
        end
+       %GPU memory limit 
+       options.GPUindex = get(mod_hdl.GPUDevice, 'Value')
+       options.gpu_memory_limit = eval(get(mod_hdl.GPUmemory, 'String'));
        
        %Mask
        if get(mod_hdl.applymask, 'Value')
-           [Y, X] = meshgrid(-r_dims(2)/2:r_dims(2)/2-1, -r_dims(1)/2:r_dims(1)/2-1);           
+           %[Y, X] = meshgrid(-r_dims(2)/2:r_dims(2)/2-1, -r_dims(1)/2:r_dims(1)/2-1);           
            options.mask = minR;
-           %options.mask = (X.^2 + Y.^2 < minR^2);
-           %imager(options.mask)
-           %pause
+           
        end
        %imager(s)
        %pause
@@ -610,13 +620,19 @@ mod_hdl.load_function = @(h) file_load(h, mod_hdl);  % function to run on file l
        assignin('base', 'current_angs',current_angs);
        
        %SORT OUT NEGATIVE!!
-       [r, cs_iter] = central_slice_astra(s, -pi*(current_angs+angs_shift)/180, R12, pixel_size, [], cs, [], r_dims, options);
+       rot_dir = eval(get(mod_hdl.recon_RotDir, 'String'));
+       [r, cs_iter] = central_slice_astra(s, rot_dir*pi*(current_angs+angs_shift)/180, R12, pixel_size, [], cs, [], r_dims, options);
       
+       %Calculate total variation
+       rTV = TV(r,cs);       
+       
         %Show preview
        if cs_iter==1
             imager(r, 'name',['Centre_shift = ' num2str(cs(1))],'updatefcn', {@(x) set(gcf, 'Name', ['Centre_shift = ' num2str(cs(x))])});
+            figure;plot(cs, rTV, '-ob');xlabel('centre shift');ylabel('TV');
        elseif cs_iter==2
            imager(r, 'name',['No. iterations = ' num2str(options.iterations(1))],'updatefcn', {@(x) set(gcf, 'Name', ['No. iterations = ' num2str(options.iterations(x))])});
+           figure;plot(options.interations, rTV, '-ob');xlabel('iterations');ylabel('TV');
        end
     end
 
@@ -748,6 +764,10 @@ function file_load(handles,mod_hdl)
      set(mod_hdl.recon_dir, 'String', [curr_dir '\reconstruction']);
      
      mod_hdl.clear_previewdata();
+     
+     %Set GPU device
+     NGPU = gpuDeviceCount;
+     set(mod_hdl.GPUDevice, 'String',num2cell(num2str([1:NGPU], '%i')), 'Value', NGPU);
     
 end
 
@@ -779,8 +799,9 @@ else
    end
 end
 
-%SORT OUT NEGATIVE
-recon_params.angles = -recon_params.angles;
+%Clockwise or counter clockwise rotation
+rot_dir = eval(get(mod_hdl.recon_RotDir, 'String'));
+recon_params.angles = rot_dir*recon_params.angles;
 
 %Get angs_skip
 recon_params.angles_skip = eval(get(mod_hdl.recon_AnglesSkip, 'String'));
@@ -874,10 +895,12 @@ recon_params.options.detector_shifty = 0;
 
 
 %Set reconstruction chunk size
-glim = str2num(get(mod_hdl.GPUmemory, 'String'))*(1024^2);
+glim = str2num(get(mod_hdl.GPUmemory, 'String'));
+recon_params.options.gpu_memory_limit = glim;
+recon_params.options.GPUindex = get(mod_hdl.GPUDevice, 'Value');
 srs = (prod(recon_params.SD.dimensions(1:2)+[0 2*pad_opts_w])+prod(recon_params.output_dims))*4;
 
-recon_params.options.chunk_size = floor(glim/srs/2);
+recon_params.options.chunk_size = floor(glim*(1024^2)/srs/2);
 if recon_params.options.chunk_size<1
     recon_params.options.chunk = 1;
 end

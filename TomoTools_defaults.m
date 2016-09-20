@@ -75,10 +75,11 @@ defaults.zoom_step = 1.5;
 %Load methods-------------------------------------------------
 %each method in a row of the cell
 defaults.file_types = {'*.txrm; *.xrm; *.txm;*.vgi;*.tif;*.tiff;*.xml;*.nxs', 'All supported files';'*.txrm; *.xrm; *.txm', 'Xradia files (*.xrm, *.txm, *.txrm)';'*.vgi', 'Volume Graphics files (*.vgi)';...
-                        '*.tif;*.tiff', 'Tiff stack (*.tif(f))';'*.xml', 'TTxml (*.xml)'; '*.nxs', 'NeXus files (*.nxs)'};
+                        '*.tif;*.tiff', 'Tiff stack (*.tif(f))';'*.xml', 'TTxml (*.xml)'; '*.nxs', 'NeXus files (*.nxs)'; 'info.txt', 'Geotek files'};
 defaults.loadmethods = {@txmheader_read8,@txmimage_read8, {0,0,0}, @txmdata_read8;@vgiheader_read,@vgivol_read, {}, {};...
                         @tiffstackheader_read,@tiffstackimage_read, {},{};@TTxml,{}, {},{};...
-                        @NXheader_read, @NXimage_read, {0,0},{}};
+                        @NXheader_read, @NXimage_read, {0,0},{};...
+                        @geotekheader_read, [], {0,0},{}};
 %defaults.writemethods = {@txm2tiff9,@txm2am,@txm2bin;@xtekvol2tiff,@xtekvol2am,@xtekvol2bin; {},{},{}};
 
 end

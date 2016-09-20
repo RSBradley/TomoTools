@@ -178,6 +178,7 @@ else
 end
 
 %% CREATE SINOGRAMS
+norm_val = 1;
 switch parallel_mode
     case 0
         seq_calc;
@@ -196,6 +197,8 @@ if ~isempty(sfname)
         t_handles{pp}.close();        
    end 
 end
+
+
 
 %Reset shifts
 PDATA.apply_shifts = PDS;
@@ -236,7 +239,7 @@ end
 
         %q=1:numel(m);
         counter = 0;        
-        
+        numel(m)
         parfor n=1:numel(m)
            %Loop over angles
            counter = counter+1;
@@ -266,7 +269,9 @@ end
            if do_pad
                 img = padtovalue(img, [0 pad_opt(1)],pad_opt(2));
            end
-
+           
+           
+           
            %Apply filter(s)
            if do_filt
                for pf = 1:n_filt
@@ -280,7 +285,10 @@ end
                    %img = filt_opts{pf,1}(img, []);
                end
            end
-
+           %Remove any dead areas - shoudl be cropped or filtered out
+           %already
+           img(img==0)=1;
+           
            %Determine shifts
            if do_shifts
                %APPLY SHIFTS
@@ -326,6 +334,7 @@ end
            yrng_final = round(yrng_final);
 
            %CONVERT FROM PROJECTION DATA TO SINOGRAM
+           s_slice = single(s_slice)/norm_val;                   
            s_slice = single(real(-log(s_slice)));
 
            %Update output as necessary
@@ -389,6 +398,10 @@ end
                        img = filt_opts{pf,1}(img, filt_opts{pf,2:end}{:});
                    end
                end
+               
+               %Remove any dead areas - shoudl be cropped or filtered out
+               %already
+               img(img==0)=1;
 
                %Determine shifts
                if do_shifts
@@ -435,6 +448,7 @@ end
                yrng_final = round(yrng_final);
 
                %CONVERT FROM PROJECTION DATA TO SINOGRAM
+               s_slice = single(s_slice)/norm_val;   
                s_slice = single(real(-log(s_slice)));
 
                %Update output as necessary  
@@ -446,7 +460,7 @@ end
                 if ~isempty(sfname)
                 for p = 1:n_slices
                     %Write stips        
-                    t_handles{p}.writeEncodedStrip(qc, s_slice(yrng_final(p), :));         
+                    t_handles{p}.writeEncodedStrip(q(n), s_slice(yrng_final(p), :));         
                 end 
                 end
                t = toc;
@@ -515,6 +529,10 @@ end
                        img = filt_opts{pf,1}(img, filt_opts{pf,2:end}{:});
                    end
                end
+               
+               %Remove any dead areas - shoudl be cropped or filtered out
+               %already
+               img(img==0)=1;
 
                %Determine shifts
                if do_shifts
@@ -561,6 +579,7 @@ end
                yrng_final = round(yrng_final);
 
                %CONVERT FROM PROJECTION DATA TO SINOGRAM
+               s_slice = single(s_slice)/norm_val;   
                s_slice = single(real(-log(s_slice)));
 
                %Update output as necessary               
